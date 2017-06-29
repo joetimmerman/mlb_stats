@@ -16,15 +16,15 @@ Data folder stores extracts of primary tables from January 01, 2012 - April 04, 
 ## Loading Process:
 
   ### Method: iterURL
-	* method takes a gd2.mlb.com URL from any point in the hierarchy and iterates through all branches. 
-	* If a year URL is input, it will pull all games from that year,
-	* If a year-month URL is input, it will pull all games from that year and month
-	* Once you get down to the game level, it will iterate through the following pages:
-		* all_innings      
-		* boxscore      
-		* game      
-		* players      
-	* Note: progress updates get a little funky if you iterate at the game level    
+* method takes a gd2.mlb.com URL from any point in the hierarchy and iterates through all branches. 
+* If a year URL is input, it will pull all games from that year,
+* If a year-month URL is input, it will pull all games from that year and month
+* Once you get down to the game level, it will iterate through the following pages:
+	* all_innings      
+	* boxscore      
+	* game      
+	* players      
+* Note: progress updates get a little funky if you iterate at the game level    
       
   ### Method: parseInnings & parseInning  
 * tries to iterate through the all_innings URL. If that is not found, it iterates through the individual inning pages    
