@@ -10,6 +10,10 @@ mlbStats.py contains the code for pulling, extracting and formatting the data fr
 
 Analytics & Predictive Modeling scripts to follow.
 
+### Additional Data Sources:
+* Park Factors data from: http://www.espn.com/mlb/stats/parkfactor
+* Leverage Scenario data from: http://www.insidethebook.com/li.shtml
+
 ## Data
 Data folder stores extracts of primary tables from January 01, 2012 - April 04, 2017. Updates to follow
 
@@ -28,7 +32,7 @@ Data folder stores extracts of primary tables from January 01, 2012 - April 04, 
       
   ### Method: parseInnings & parseInning  
 * tries to iterate through the all_innings URL. If that is not found, it iterates through the individual inning pages    
-* This process pulls all of the atBats, pitches, runners and pickoffs in the game, loading them to their respective arrays.    
+* This process pulls all of the atBats, actons (injury delay, substitution, etc.), pitches, runners and pickoffs in the game, loading them to their respective arrays.    
 * More recent games (I think 2015-Current) have a built-in event_num, but the older games don't have one, so mastEventNum is used to create that ID
     
   ### Method: parseGame  
