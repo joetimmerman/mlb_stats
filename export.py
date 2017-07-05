@@ -16,16 +16,7 @@ with open(passFile,'r') as pf:
 		elif row[0] == 'pass':
 			aws_password = row[1]
 
-#create connection to AWS MySQL server
-connection = pymysql.connect(host='baseball.cfelhfqsawiy.us-east-1.rds.amazonaws.com',
-                             port=3306,
-                             user=aws_username,
-                             db='mlb_data_test',
-                             password=aws_password,
-                             charset='utf8mb4',
-                             cursorclass=pymysql.cursors.DictCursor)
-conn = connection.cursor()
-
+	
 tables = [
 	'game',
 	'umpire_game',
@@ -47,32 +38,53 @@ tables = [
 	'team_game'
 ]
 
-def fetchAndWrite(table):
+def fetchAndWrite(table, conn):
 	print('Starting: ' + table)
 	table_get = 'SELECT * FROM {tn};'.format(tn=table)
 	try:
 		conn.execute(table_get);
 		data = conn.fetchall();	
 		outFile = mlbData + table + '.csv'
-		
+			
 		with open(outFile,'w') as write_out:
 			out_writer = csv.writer(write_out,
-									lineterminator='\n',
-									quotechar='"'
-								   )
-		
+										lineterminator='\n',
+										quotechar='"'
+									   )
+			
 			for record in data:
 				out_writer.writerow(record.values())
-	
+		
 		print('Finished: ' + table)
+	except pymysql.err.ProgrammingError as err:
+		print('Table does not exist')
+	except pymysql.err.OperationalError as err:
+		print('Unable to connect to server')
 	except:
-		print(table + ' does not exist.')
+		print('Unhandled table error.')
 
+		
 def export():
-	if len(sys.argv) == 1:
-		for table in tables:
-			fetchAndWrite(table)
-	else:
-		fetchAndWrite(sys.argv[1])
+	try:
+		connection = pymysql.connect(host='baseball.cfelhfqsawiy.us-east-1.rds.amazonaws.com',
+									 port=3306,
+									 user=aws_username,
+									 db='mlb_data_test',
+									 password=aws_password,
+									 charset='utf8mb4',
+									 cursorclass=pymysql.cursors.DictCursor)
+		conn = connection.cursor()
+		
+		if len(sys.argv) == 1:
+			for table in tables:
+				fetchAndWrite(table, conn)
+		else:
+			fetchAndWrite(sys.argv[1], conn)		
+
+	except pymysql.err.OperationalError as err:
+		print('Unable to connect to server.')
+	except:
+		print('Unhandled connection error.')
+	
 		
 export()
