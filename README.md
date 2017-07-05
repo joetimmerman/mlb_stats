@@ -17,9 +17,32 @@ Analytics & Predictive Modeling scripts to follow.
 ## Data
 Data folder stores extracts of primary tables from January 01, 2012 - April 04, 2017. Updates to follow
 
+### Export.py
+Python script to export all or some of the tables. If passed without additional command line argument, it will run a full extract of the following tables:
+* game
+* umpire_game
+* pitch
+* pickoff
+* atBat
+* coach_game
+* player_game
+* stadium_game
+* runner
+* action
+* boxscore
+* batter_box
+* pitcher_box
+* linescore
+* linescore_inning
+* leverage
+* park_factors
+* team_game
+
+Otherwise, passing a table name as an argument will extract that single table.
+
 ## Loading Process:
 
-  ### Method: iterURL
+### Method: iterURL
 * method takes a gd2.mlb.com URL from any point in the hierarchy and iterates through all branches. 
 * If a year URL is input, it will pull all games from that year,
 * If a year-month URL is input, it will pull all games from that year and month
@@ -30,12 +53,12 @@ Data folder stores extracts of primary tables from January 01, 2012 - April 04, 
 	* players      
 * Note: progress updates get a little funky if you iterate at the game level    
       
-  ### Method: parseInnings & parseInning  
+### Method: parseInnings & parseInning  
 * tries to iterate through the all_innings URL. If that is not found, it iterates through the individual inning pages    
 * This process pulls all of the atBats, actons (injury delay, substitution, etc.), pitches, runners and pickoffs in the game, loading them to their respective arrays.    
 * More recent games (I think 2015-Current) have a built-in event_num, but the older games don't have one, so mastEventNum is used to create that ID
     
-  ### Method: parseGame  
+### Method: parseGame  
 * This method parses the game URL    
 * This process loads the game, teams and stadium info to their respective arrays    
 * There is a deprecated method I was using to get the sun position for the day of the game, but that API is no longer active
