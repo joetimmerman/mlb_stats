@@ -12,12 +12,25 @@ import warnings
 
 warnings.filterwarnings("ignore", category = pymysql.Warning)
 
+passFile = 'C:\\Users\\evan.marcey\\Documents\\GitHub\\mlb_stats\\pass.csv'
+
+aws_username = ''
+aws_password = ''
+
+with open(passFile,'r') as pf:
+	pfr = csv.reader(pf)
+	for row in pfr:
+		if row[0] == 'username':
+			aws_username = row[1]
+		elif row[0] == 'pass':
+			aws_password = row[1]
+
 #create connection to AWS MySQL server
 connection = pymysql.connect(host='baseball.cfelhfqsawiy.us-east-1.rds.amazonaws.com',
                              port=3306,
-                             user='admin',
+                             user=aws_username,
                              db='mlb_data_test',
-                             password='administrator',
+                             password=aws_password,
                              charset='utf8mb4',
                              cursorclass=pymysql.cursors.DictCursor)
 conn = connection.cursor()
