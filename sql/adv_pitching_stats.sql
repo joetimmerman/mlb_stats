@@ -1,27 +1,19 @@
 SELECT	f1.playerID,
 		f1.record_year,
-        CASE 
-			WHEN f1.record_year = '2017'
-				THEN (13*f1.home_runs + 3*(f1.hit_by_pitch+f1.walks) - 2*f1.strikeouts)/(f1.outs/3) + cf.cFip
-			WHEN f1.record_year = '2016'
-				THEN (13*f1.home_runs + 3*(f1.hit_by_pitch+f1.walks) - 2*f1.strikeouts)/(f1.outs/3) + cf.cFip
-			WHEN f1.record_year = '2015'
-				THEN (13*f1.home_runs + 3*(f1.hit_by_pitch+f1.walks) - 2*f1.strikeouts)/(f1.outs/3) + cf.cFip
-			WHEN f1.record_year = '2014'
-				THEN (13*f1.home_runs + 3*(f1.hit_by_pitch+f1.walks) - 2*f1.strikeouts)/(f1.outs/3) + cf.cFip
-			WHEN f1.record_year = '2013'
-				THEN (13*f1.home_runs + 3*(f1.hit_by_pitch+f1.walks) - 2*f1.strikeouts)/(f1.outs/3) + cf.cFip
-			WHEN f1.record_year = '2012'
-				THEN (13*f1.home_runs + 3*(f1.hit_by_pitch+f1.walks) - 2*f1.strikeouts)/(f1.outs/3) + cf.cFip
-			ELSE (13*f1.home_runs + 3*(f1.hit_by_pitch+f1.walks) - 2*f1.strikeouts)/(f1.outs/3)
-		END fip,
+		ROUND((13*f1.home_runs + 3*(f1.hit_by_pitch+f1.walks) - 2*f1.strikeouts)/(f1.outs/3) + cf.cFip,3) fip,
+        ROUND((f1.walks+f1.hits)/(f1.outs/3),3) whip,
+        ROUND((f1.hits-f1.home_runs)/(f1.outs+f1.hits+f1.sac-f1.strikeouts-f1.home_runs),3) babip,
+        ROUND(((13*f1.fly_balls*(cf.home_runs/cf.fly_balls)) + 3*(f1.walks+f1.hit_by_pitch) - 2*f1.strikeouts)/(f1.outs/3) + cf.cFip,3) xFip,
         f1.games_played,
+        f1.outs+f1.hits at_bats,
         f1.home_runs,
+        f1.hits,
         f1.walks,
         f1.hit_by_pitch,
         f1.strikeouts,
         f1.outs,
-        cf.cFip
+        f1.sac,
+        ROUND(cf.cFip,3) cFip
 FROM	(SELECT	pg.playerID,
 				substring(g.gameID,1,4) record_year,
                 count(distinct g.gameID) games_played,
@@ -46,13 +38,29 @@ FROM	(SELECT	pg.playerID,
 						ELSE 0
 					END) strikeouts,
 				SUM(CASE
+						WHEN UPPER(ab.event) LIKE '%FLY%'
+							THEN 1
+						ELSE 0
+					END) fly_balls,
+				SUM(CASE
 						WHEN 	UPPER(ab.event) LIKE '%OUT%' 
 								OR UPPER(ab.event) LIKE '%DOUBLE PLAY%' 
 								OR UPPER(ab.event) LIKE '%TRIPLE PLAY%' 
 								OR UPPER(ab.event) LIKE '%DP%'
+                                OR UPPER(ab.event) LIKE '%SAC%'
 							THEN 1
 						ELSE 0
-					END) outs
+					END) outs,
+				SUM(CASE
+						WHEN ab.event IN ('Single','Double','Triple','Home Run')
+							THEN 1
+						ELSE 0
+					END) hits,
+				SUM(CASE
+						WHEN upper(ab.event) LIKE '%SAC%'
+							THEN 1
+						ELSE 0
+					END) sac
 		FROM	game g
 		JOIN	player_game pg
 			ON	pg.gameID = g.gameID 
@@ -69,9 +77,7 @@ JOIN	(SELECT	substring(g.gameID,1,4) record_year,
 				sum(pb.out)				outs,
 				sum(pb.bb)				walks,
 				hbp.hit_by_pitch		hit_by_pitch,
-				sum(pb.er)/
-					(sum(pb.out)/3)*9 
-				league_era,
+                hbp.fly_balls,
 				(sum(pb.er)/(sum(pb.out)/3)*9) -
 					(13*sum(pb.hr) + 3*(sum(pb.bb)+hbp.hit_by_pitch) - 2*sum(pb.so))/(sum(pb.out)/3) cFip
 		FROM 	game g
@@ -83,7 +89,12 @@ JOIN	(SELECT	substring(g.gameID,1,4) record_year,
 								WHEN ab.event = 'Hit By Pitch' 
 									THEN 1 
 								ELSE 0
-							END) hit_by_pitch
+							END) hit_by_pitch,
+						SUM(CASE
+								WHEN UPPER(ab.event) LIKE '%FLY%'
+									THEN 1
+								ELSE 0
+							END) fly_balls
 				FROM	game g
 				JOIN	atBat ab
 					ON	ab.gameID = g.gameID
