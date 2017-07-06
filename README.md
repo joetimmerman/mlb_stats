@@ -17,7 +17,19 @@ Analytics & Predictive Modeling scripts to follow.
 ## Data
 Data folder stores extracts of primary tables from January 01, 2012 - July 06, 2017.
 
+## SQL
+This folder contains all SQL scripts.
+
+### Schema_DDL.sql
+As the name implies, this file contains the DDL for all the main tables for the database.
+
+### get_fip.sql
+This file can be run to return the fip for each playerID and year found.
+Notes: fip will not be accurate if the player has not played many games. 
+
 ## Python:
+This folder contains all Python scripts.
+
 ### Export.py
 Python script to export all or some of the tables. If passed without additional command line argument, it will run a full extract of the following tables:
 * game
