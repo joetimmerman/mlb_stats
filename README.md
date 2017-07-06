@@ -15,7 +15,7 @@ Analytics & Predictive Modeling scripts to follow.
 * Leverage Scenario data from: http://www.insidethebook.com/li.shtml
 
 ## Data
-Data folder stores extracts of primary tables from January 01, 2012 - April 04, 2017. Updates to follow
+Data folder stores extracts of primary tables from January 01, 2012 - July 06, 2017.
 
 ### Export.py
 Python script to export all or some of the tables. If passed without additional command line argument, it will run a full extract of the following tables:
@@ -90,3 +90,12 @@ Otherwise, passing a table name as an argument will extract that single table.
     
  ### Notes:  
 * This process takes a while. With a good connection, it should run a year of data in around 2-3 hours. 
+
+## Other Load Methods:
+These methods do not run as part of the main load process.
+
+### Method: getParkFactors
+* This method pulls the park factor data from ESPN and updates the park_factors table ith new data.
+
+### Method: leverageParse
+* This method pulls the leverage data from insidethebook and loads the leverage table.
