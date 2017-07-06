@@ -51,6 +51,7 @@ def fetchAndWrite(table, conn):
 										lineterminator='\n',
 										quotechar='"'
 									   )
+			out_writer.writerow(data[0].keys())
 			
 			for record in data:
 				out_writer.writerow(record.values())
@@ -60,8 +61,8 @@ def fetchAndWrite(table, conn):
 		print('Table does not exist')
 	except pymysql.err.OperationalError as err:
 		print('Unable to connect to server')
-	except:
-		print('Unhandled table error.')
+	#except:
+		#print('Unhandled table error.')
 
 		
 def export():
@@ -83,8 +84,8 @@ def export():
 
 	except pymysql.err.OperationalError as err:
 		print('Unable to connect to server.')
-	except:
-		print('Unhandled connection error.')
+	#except:
+		#print('Unhandled connection error.')
 	
 		
 export()
