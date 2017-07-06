@@ -23,12 +23,17 @@ This folder contains all SQL scripts.
 ### Schema_DDL.sql
 As the name implies, this file contains the DDL for all the main tables for the database.
 
-### get_fip.sql
-This file can be run to return the fip for each playerID and year found.
-Notes: 
-	- fip will not be accurate if the player has not played many games. 
-	- file is only configured to run 2012-2017 data
-		- ref table with fip constants to follow
+### adv_pitching_stats.sql
+This file can be run to return advanced pitching stats by playerID and year. Currently supports the following stats:
+* FIP
+* WHIP
+* BABIP
+* xFIP
+* K rate
+* BB rate
+* HR/FB
+
+The FIP measures include calculations for cFIP.
 
 ## Python:
 This folder contains all Python scripts.
