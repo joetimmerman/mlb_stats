@@ -1,8 +1,29 @@
 SELECT	f1.playerID,
 		f1.record_year,
-        (13*f1.home_runs + 3*(f1.hit_by_pitch+f1.walks) - 2*f1.strikeouts)/(f1.outs/3) fip
+        CASE 
+			WHEN f1.record_year = '2017'
+				THEN (13*f1.home_runs + 3*(f1.hit_by_pitch+f1.walks) - 2*f1.strikeouts)/(f1.outs/3) + 3.154
+			WHEN f1.record_year = '2016'
+				THEN (13*f1.home_runs + 3*(f1.hit_by_pitch+f1.walks) - 2*f1.strikeouts)/(f1.outs/3) + 3.147
+			WHEN f1.record_year = '2015'
+				THEN (13*f1.home_runs + 3*(f1.hit_by_pitch+f1.walks) - 2*f1.strikeouts)/(f1.outs/3) + 3.134
+			WHEN f1.record_year = '2014'
+				THEN (13*f1.home_runs + 3*(f1.hit_by_pitch+f1.walks) - 2*f1.strikeouts)/(f1.outs/3) + 3.132
+			WHEN f1.record_year = '2013'
+				THEN (13*f1.home_runs + 3*(f1.hit_by_pitch+f1.walks) - 2*f1.strikeouts)/(f1.outs/3) + 3.048
+			WHEN f1.record_year = '2012'
+				THEN (13*f1.home_runs + 3*(f1.hit_by_pitch+f1.walks) - 2*f1.strikeouts)/(f1.outs/3) + 3.095
+			ELSE (13*f1.home_runs + 3*(f1.hit_by_pitch+f1.walks) - 2*f1.strikeouts)/(f1.outs/3)
+		END fip,
+        f1.games_played,
+        f1.home_runs,
+        f1.walks,
+        f1.hit_by_pitch,
+        f1.strikeouts,
+        f1.outs
 FROM	(SELECT	pg.playerID,
 				substring(g.gameID,1,4) record_year,
+                count(distinct g.gameID) games_played,
 				SUM(CASE 
 						WHEN ab.event = 'Home Run' 
 							THEN 1 
