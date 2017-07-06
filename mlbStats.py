@@ -1226,3 +1226,57 @@ def getParkFactors():
                             format(thr=newPark[2],th=newPark[3],t2b=newPark[4],t3b=newPark[5],tbb=newPark[6],pnm=newPark[1])
     if len(insertParks) > 0:
         insertRecords('park_factors',insertParks,getColumns('park_factors'))
+    connection.commit()
+
+#method leverageParse - insert ignore the leverage rankings for each scenario
+#this data is static and shouldn't need to be updated
+  def leverageParse():
+    leverageURL = 'http://www.insidethebook.com/li.shtml'
+    tree = etree.parse(leverageURL, etree.HTMLParser())
+    root = tree.getroot() 
+    oArray = []
+
+    for table in root.iter('table'):
+        if table.items()[0][1] == '450':
+            y = 0
+            topBottom = '0'
+            inning = 0
+            for tr in table.iterchildren():
+                if len(tr.getchildren()) > 2 and inning < 10:
+                    temp = []
+                    for td in tr.iter('td'):
+                        tempText = ''
+                        on_1b = 0
+                        on_2b = 0
+                        on_3b = 0
+                        if len(td.getchildren()) > 0:
+                            tempText = td.getchildren()[0].text
+                        else:
+                            tempText = td.text
+                        tempText = tempText.replace('\xa0','').replace('\r','').replace('\n','')
+                        try:
+                            temp.append(float(tempText))
+                        except:
+                            temp.append(tempText)
+                    if temp[0] == '_ _ _' and temp[1] == 0:
+                        if topBottom == 'Top':
+                            topBottom = 'Bottom'
+                        else:
+                            topBottom = 'Top'
+                            inning += 1
+                    temp.insert(0,inning)
+                    temp.insert(1,topBottom)
+                    if temp[3] != 'Outs':
+                        if temp[2].find('1') != -1:
+                            on_1b = 1
+                        if temp[2].find('2') != -1:
+                            on_2b = 1
+                        if temp[2].find('3') != -1:
+                            on_3b = 1
+                        temp.append(on_1b)
+                        temp.append(on_2b)
+                        temp.append(on_3b)
+                        oArray.append(temp)
+    columns = getColumns('leverage')
+    insertRecords('leverage',oArray,columns)
+    connection.commit()
