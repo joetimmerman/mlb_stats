@@ -25,7 +25,10 @@ As the name implies, this file contains the DDL for all the main tables for the 
 
 ### get_fip.sql
 This file can be run to return the fip for each playerID and year found.
-Notes: fip will not be accurate if the player has not played many games. 
+Notes: 
+	- fip will not be accurate if the player has not played many games. 
+	- file is only configured to run 2012-2017 data
+		- ref table with fip constants to follow
 
 ## Python:
 This folder contains all Python scripts.
