@@ -1184,9 +1184,45 @@ def main(parentURLs):
 
     print('%s seconds elapsed.' % round(yTime-xTime,0))
     
-parentURLs = [
-    'http://gd2.mlb.com/components/game/mlb/year_2017/month_01/',
-    'http://gd2.mlb.com/components/game/mlb/year_2017/month_02/',
-    'http://gd2.mlb.com/components/game/mlb/year_2017/month_03/',
-    'http://gd2.mlb.com/components/game/mlb/year_2017/month_04/'
-    ]
+#method getParkFactors updates the park_factors table with the most recent ESPN park factors calculations
+def getParkFactors():
+    parkUrl = 'http://www.espn.com/mlb/stats/parkfactor'
+    tree = etree.parse(parkUrl, etree.HTMLParser())
+    root = tree.getroot()
+    newParks = []
+    insertParks = []
+    zz = '//*[@id="content"]/div[3]/div[1]/div[1]/div[1]'
+    zt = root.xpath(zz)[0]
+    i = 1
+    for child in zt.iter('tr'):
+        childClass = child.items()[0][1]
+        if childClass == 'oddrow' or childClass == 'evenrow':
+            tempPark = []
+            for element in child.iter('td'):
+                if element.text == None:
+                    for el in element.iter():
+                        if el.tag == 'a':
+                            tempPark.append(el.text)
+                else:
+                    tempPark.append(element.text)
+            if len(tempPark) == 8:
+                tempPark.pop(0)
+            tempPark.insert(0,i)
+            i+=1
+            newParks.append(tempPark)
+        
+    current = selectRecords('park_factors')
+    for newPark in newParks:
+        found = False
+        
+        for currentPark in current:
+            if currentPark['park_name'] == newPark[1]:
+                found = True
+    
+        if not found:
+            insertParks.append(newPark)
+        else:
+            updateParks = 'UPDATE park_factors SET hr={thr},h={th},2b={t2b},3b={t3b},bb={tbb} WHERE park_name{pnm}'.\
+                            format(thr=newPark[2],th=newPark[3],t2b=newPark[4],t3b=newPark[5],tbb=newPark[6],pnm=newPark[1])
+    if len(insertParks) > 0:
+        insertRecords('park_factors',insertParks,getColumns('park_factors'))
