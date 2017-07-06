@@ -15,7 +15,6 @@ with open(passFile,'r') as pf:
 			aws_username = row[1]
 		elif row[0] == 'pass':
 			aws_password = row[1]
-
 	
 tables = [
 	'game',
@@ -58,12 +57,11 @@ def fetchAndWrite(table, conn):
 		
 		print('Finished: ' + table)
 	except pymysql.err.ProgrammingError as err:
-		print('Table does not exist')
+		print(table + ' does not exist')
 	except pymysql.err.OperationalError as err:
 		print('Unable to connect to server')
-	#except:
-		#print('Unhandled table error.')
-
+	except:
+		print('Unhandled table error.')
 		
 def export():
 	try:
@@ -84,8 +82,7 @@ def export():
 
 	except pymysql.err.OperationalError as err:
 		print('Unable to connect to server.')
-	#except:
-		#print('Unhandled connection error.')
-	
+	except:
+		print('Unhandled connection error.')
 		
 export()
