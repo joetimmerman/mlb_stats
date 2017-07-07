@@ -23,7 +23,7 @@ This folder contains all SQL scripts.
 ### Schema_DDL.sql
 As the name implies, this file contains the DDL for all the main tables for the database.
 
-### ADV PITCHING STATS
+### ADV Pitching Stats
 The adv_pitching_stats queries select and calculate a series of pitching statistics and group by playerID and either month or year. The supported statistics include:
 * FIP
 * WHIP
@@ -37,6 +37,21 @@ The adv_pitching_stats queries select and calculate a series of pitching statist
 As well as the fields required to calculate each of the statistics.
 
 Note: The FIP measures include calculations for cFIP.
+
+### ADV Batting Stats
+The adv_batting_stats queries select and calculate a series of batting statistics and group by playerID and either month or year. The supported statistics include:
+* batting average
+* OBP
+* SLG
+* OPS
+* ISO
+* BABIP
+* Walk Rate
+* Strikeout Rate
+* wOBA
+* wRAA
+* wRC
+* Stolen Base Success Rate
 
 ## Python:
 This folder contains all Python scripts.
