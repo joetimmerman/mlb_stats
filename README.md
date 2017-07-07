@@ -142,3 +142,7 @@ These methods do not run as part of the main load process.
 
 #### Method: leverageParse
 * This method pulls the leverage data from insidethebook and loads the leverage table.
+
+### sql_data_load.py
+
+This file loads the tables with the select statements created by the SQL scripts in the SQL folder.
