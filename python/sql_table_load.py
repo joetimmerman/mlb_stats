@@ -14,7 +14,7 @@ sqlFiles = [
 	'adv_pitching_stats_month.sql',
 	'adv_batting_stats_year.sql',
 	'adv_batting_stats_month.sql',
-	'players.sql'
+	'player.sql'
 ]
 
 def openConnection():
