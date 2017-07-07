@@ -1,5 +1,6 @@
 import csv
 import pymysql
+import pymysql.cursors
 import sys
 
 mlbData = 'C:\\Users\\evan.marcey\\Documents\\GitHub\\mlb_stats\\data\\'
@@ -34,7 +35,12 @@ tables = [
 	'linescore_inning',
 	'leverage',
 	'park_factors',
-	'team_game'
+	'team_game',
+	'adv_batting_stats_month',
+	'adv_batting_stats_year',
+	'adv_pitching_stats_month',
+	'adv_pitching_stats_year',
+	'player'
 ]
 
 def fetchAndWrite(table, conn):
