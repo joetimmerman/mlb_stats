@@ -32,6 +32,7 @@ This file can be run to return advanced pitching stats by playerID and year. Cur
 * K rate
 * BB rate
 * HR/FB
+* SIERA
 
 The FIP measures include calculations for cFIP.
 
