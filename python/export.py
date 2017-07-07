@@ -2,8 +2,8 @@ import csv
 import pymysql
 import sys
 
-mlbData = 'C:\\Users\\evan.marcey\\Documents\\GitHub\\mlb_stats\\extracts\\'
-passFile = 'C:\\Users\\evan.marcey\\Documents\\GitHub\\mlb_stats\\pass.csv'
+mlbData = 'C:\\Users\\evan.marcey\\Documents\\GitHub\\mlb_stats\\data\\'
+passFile = 'C:\\Users\\evan.marcey\\Documents\\mlb_stats\\pass.csv'
 
 aws_username = ''
 aws_password = ''
