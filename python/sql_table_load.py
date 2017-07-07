@@ -75,15 +75,11 @@ for sqlFile in sqlFiles:
 		
 		connection,conn = openConnection()
 			
-		print(len(preppedQuery))
-		print(tableName)
-		print(mlbStats.getColumns(tableName))
-			
 		print('\tInserting records into {tn}...'.format(tn=sqlFile))
 		mlbStats.insertRecords(tableName,preppedQuery,mlbStats.getColumns(tableName))
 			
 		conn.execute('SELECT COUNT(1) FROM {tn}'.format(tn=tableName))
-		print(conn.fetchall())
+		print('\t' + str(conn.fetchall()[0].values()) + ' records loaded.')
 			
 		connection.commit()
 		connection.close()	
@@ -94,5 +90,3 @@ for sqlFile in sqlFiles:
 	except:
 		print('Unhandled file error:')
 		print(sys.exc_info())
-			
-	connection.close()
