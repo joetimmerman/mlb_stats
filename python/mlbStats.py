@@ -945,7 +945,7 @@ def insertRecords(tableName,inArray,tableFields):
 	except:
 		exs ="INSERT IGNORE INTO " + tableName +			 " VALUES (" + vVar + ")"
 		conn.executemany(exs,inArray)
-	#commit is after loop bc I want to commit after there are no errors in the whole thing.
+	connection.commit()
 
 #method to write 1 array to 1 file
 #input: table array with table name and field names;
