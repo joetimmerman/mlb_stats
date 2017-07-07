@@ -40,7 +40,8 @@ tables = [
 	'adv_batting_stats_year',
 	'adv_pitching_stats_month',
 	'adv_pitching_stats_year',
-	'player'
+	'player',
+	'team'
 ]
 
 def fetchAndWrite(table, conn):
