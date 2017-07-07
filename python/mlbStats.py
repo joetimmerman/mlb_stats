@@ -35,8 +35,8 @@ connection = pymysql.connect(host='baseball.cfelhfqsawiy.us-east-1.rds.amazonaws
                              cursorclass=pymysql.cursors.DictCursor)
 conn = connection.cursor()
 
-errorDir = 'C:\\Users\\evan.marcey\\Documents\\mlbStats\\error_logs\\'
-archiveDir = 'C:\\Users\\evan.marcey\\Documents\\mlbStats\\error_logs\\error_archive\\'
+errorDir = 'C:\\Users\\evan.marcey\\Documents\\mlb_stats\\error_logs\\'
+archiveDir = 'C:\\Users\\evan.marcey\\Documents\\mlb_stats\\error_logs\\error_archive\\'
 
 #output arrays that are written to file/db
 errorURLs = []
