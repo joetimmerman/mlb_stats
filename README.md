@@ -23,6 +23,9 @@ This folder contains all SQL scripts.
 ### Schema_DDL.sql
 As the name implies, this file contains the DDL for all the main tables for the database.
 
+### Player.sql
+This player loads the Player table, which has all distinct players.
+
 ### ADV Pitching Stats
 The adv_pitching_stats queries select and calculate a series of pitching statistics and group by playerID and either month or year. The supported statistics include:
 * FIP
