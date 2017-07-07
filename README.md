@@ -23,8 +23,8 @@ This folder contains all SQL scripts.
 ### Schema_DDL.sql
 As the name implies, this file contains the DDL for all the main tables for the database.
 
-### adv_pitching_stats.sql
-This file can be run to return advanced pitching stats by playerID and year. Currently supports the following stats:
+### ADV PITCHING STATS
+The adv_pitching_stats queries select and calculate a series of pitching statistics and group by playerID and either month or year. The supported statistics include:
 * FIP
 * WHIP
 * BABIP
@@ -34,7 +34,9 @@ This file can be run to return advanced pitching stats by playerID and year. Cur
 * HR/FB
 * SIERA
 
-The FIP measures include calculations for cFIP.
+As well as the fields required to calculate each of the statistics.
+
+Note: The FIP measures include calculations for cFIP.
 
 ## Python:
 This folder contains all Python scripts.
