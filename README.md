@@ -79,6 +79,11 @@ Python script to export all or some of the tables. If passed without additional 
 * leverage
 * park_factors
 * team_game
+* adv_batting_stats_month
+* adv_batting_stats_year
+* adv_pitching_stats_month
+* adv_pitching_stats_year
+* player
 
 Otherwise, passing a table name as an argument will extract that single table.
 
