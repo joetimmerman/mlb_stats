@@ -4,6 +4,8 @@ import sys
 import mlbStats
 import sys
 
+pymysql.pooling = False
+
 sqlDir = 'C:\\Users\\evan.marcey\\Documents\\GitHub\\mlb_stats\\sql\\'
 passFile = 'C:\\Users\\evan.marcey\\Documents\\mlb_stats\\pass.csv'
 
