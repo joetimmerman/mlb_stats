@@ -1,179 +1,140 @@
-SELECT	ab1.playerID,
-		ab1.record_year,
-        ab1.pa,
-        ab1.home_runs,
-        bbx1.runs,
-        ab1.rbis,
-        ab1.home_runs + ab1.singles + ab1.doubles + ab1.triples hits,
-        ab1.bb + ab1.ibb walks,
-        ab1.fly_balls,
-        ab1.pop_outs,
-        ab1.ground_balls,
-        sb1.sb,
-        sb1.cs,
-        ROUND(sb1.sb/(sb1.sb/sb1.cs),3) stolen_base_success_rate,
-        ROUND((ab1.home_runs+ab1.singles+ab1.doubles+ab1.triples)/(ab1.pa-ab1.bb-ab1.ibb-ab1.sac-ab1.hbp-ab1.interference),3) batting_average,
-        ROUND((ab1.home_runs+ab1.singles+ab1.doubles+ab1.triples+ab1.ibb+ab1.bb+ab1.hbp)/ab1.pa,3) OBP,
-        ROUND((4*ab1.home_runs+ab1.singles+2*ab1.doubles+3*ab1.triples)/(ab1.pa-ab1.bb-ab1.ibb-ab1.sac-ab1.hbp-ab1.interference),3) SLG,
-        ROUND((4*ab1.home_runs+ab1.singles+2*ab1.doubles+3*ab1.triples)/(ab1.pa-ab1.bb-ab1.ibb-ab1.sac-ab1.hbp-ab1.interference) +
-			(ab1.home_runs+ab1.singles+ab1.doubles+ab1.triples+ab1.ibb+ab1.bb+ab1.hbp)/ab1.pa,3) OPS,
-		ROUND((4*ab1.home_runs+ab1.singles+2*ab1.doubles+3*ab1.triples)/(ab1.pa-ab1.bb-ab1.ibb-ab1.sac-ab1.hbp-ab1.interference) -
-			(ab1.home_runs+ab1.singles+ab1.doubles+ab1.triples)/(ab1.pa-ab1.bb-ab1.ibb-ab1.sac-ab1.hbp-ab1.interference),3) ISO,
-		ROUND((ab1.singles+ab1.doubles+ab1.triples)/(ab1.pa-ab1.bb-ab1.ibb-ab1.hbp-ab1.interference-ab1.so-ab1.home_runs),3) BABIP,        
-        ROUND(ab1.bb/ab1.pa,2) bb_rate,
-        ROUND(ab1.so/ab1.pa,2) so_rate,
-        ROUND((0.690*ab1.bb + 0.722*ab1.hbp + 0.888*ab1.singles + 1.271*ab1.doubles + 1.616*ab1.triples + 2.101*ab1.home_runs)/(ab1.pa-ab1.ibb),3) wOBA,
-        CASE ab1.record_year
-			WHEN '2017'
-				THEN ROUND((((0.690*ab1.bb + 0.722*ab1.hbp + 0.888*ab1.singles + 1.271*ab1.doubles + 1.616*ab1.triples + 2.101*ab1.home_runs)/(ab1.pa-ab1.ibb)-0.321)/1.185)*ab1.pa,3)
-			WHEN '2016'
-				THEN ROUND((((0.690*ab1.bb + 0.722*ab1.hbp + 0.888*ab1.singles + 1.271*ab1.doubles + 1.616*ab1.triples + 2.101*ab1.home_runs)/(ab1.pa-ab1.ibb)-0.318)/1.212)*ab1.pa,3)
-			WHEN '2015'
-				THEN ROUND((((0.690*ab1.bb + 0.722*ab1.hbp + 0.888*ab1.singles + 1.271*ab1.doubles + 1.616*ab1.triples + 2.101*ab1.home_runs)/(ab1.pa-ab1.ibb)-0.313)/1.251)*ab1.pa,3)
-			WHEN '2014'
-				THEN ROUND((((0.690*ab1.bb + 0.722*ab1.hbp + 0.888*ab1.singles + 1.271*ab1.doubles + 1.616*ab1.triples + 2.101*ab1.home_runs)/(ab1.pa-ab1.ibb)-0.310)/1.304)*ab1.pa,3)
-			WHEN '2013'
-				THEN ROUND((((0.690*ab1.bb + 0.722*ab1.hbp + 0.888*ab1.singles + 1.271*ab1.doubles + 1.616*ab1.triples + 2.101*ab1.home_runs)/(ab1.pa-ab1.ibb)-0.314)/1.251)*ab1.pa,3)
-			WHEN '2012'
-				THEN ROUND((((0.690*ab1.bb + 0.722*ab1.hbp + 0.888*ab1.singles + 1.271*ab1.doubles + 1.616*ab1.triples + 2.101*ab1.home_runs)/(ab1.pa-ab1.ibb)-0.315)/1.245)*ab1.pa,3)
-			ELSE -1
-		END wRAA,
-        CASE ab1.record_year
-			WHEN '2017'
-				THEN ROUND((((0.690*ab1.bb + 0.722*ab1.hbp + 0.888*ab1.singles + 1.271*ab1.doubles + 1.616*ab1.triples + 2.101*ab1.home_runs)/(ab1.pa-ab1.ibb)-0.321)/1.185 + (bbx1_lg.runs/bbx1_lg.pa))*ab1.pa,3)
-			WHEN '2016'
-				THEN ROUND((((0.690*ab1.bb + 0.722*ab1.hbp + 0.888*ab1.singles + 1.271*ab1.doubles + 1.616*ab1.triples + 2.101*ab1.home_runs)/(ab1.pa-ab1.ibb)-0.318)/1.212 + (bbx1_lg.runs/bbx1_lg.pa))*ab1.pa,3)
-			WHEN '2015'
-				THEN ROUND((((0.690*ab1.bb + 0.722*ab1.hbp + 0.888*ab1.singles + 1.271*ab1.doubles + 1.616*ab1.triples + 2.101*ab1.home_runs)/(ab1.pa-ab1.ibb)-0.313)/1.251 + (bbx1_lg.runs/bbx1_lg.pa))*ab1.pa,3)
-			WHEN '2014'
-				THEN ROUND((((0.690*ab1.bb + 0.722*ab1.hbp + 0.888*ab1.singles + 1.271*ab1.doubles + 1.616*ab1.triples + 2.101*ab1.home_runs)/(ab1.pa-ab1.ibb)-0.310)/1.304 + (bbx1_lg.runs/bbx1_lg.pa))*ab1.pa,3)
-			WHEN '2013'
-				THEN ROUND((((0.690*ab1.bb + 0.722*ab1.hbp + 0.888*ab1.singles + 1.271*ab1.doubles + 1.616*ab1.triples + 2.101*ab1.home_runs)/(ab1.pa-ab1.ibb)-0.314)/1.251 + (bbx1_lg.runs/bbx1_lg.pa))*ab1.pa,3)
-			WHEN '2012'
-				THEN ROUND((((0.690*ab1.bb + 0.722*ab1.hbp + 0.888*ab1.singles + 1.271*ab1.doubles + 1.616*ab1.triples + 2.101*ab1.home_runs)/(ab1.pa-ab1.ibb)-0.315)/1.245 + (bbx1_lg.runs/bbx1_lg.pa))*ab1.pa,3)
-			ELSE -1
-		END wRC
-FROM	(SELECT pg.playerID,
-				substr(g.gameID,1,4) record_year,
-				COUNT(ab.atBatNum) pa,
+SELECT	f1.playerID,
+		f1.record_year,
+		ROUND((13*f1.home_runs + 3*(f1.hit_by_pitch+f1.walks) - 2*f1.strikeouts)/(f1.outs/3) + cf.cFip,3) FIP,
+        ROUND((f1.walks+f1.hits)/(f1.outs/3),3) WHIP,
+        ROUND((f1.hits-f1.home_runs)/(f1.outs+f1.hits+f1.sac-f1.strikeouts-f1.home_runs),3) BABIP,
+        ROUND(((13*f1.fly_balls*(cf.home_runs/cf.fly_balls)) + 3*(f1.walks+f1.hit_by_pitch) - 2*f1.strikeouts)/(f1.outs/3) + cf.cFip,3) xFIP,
+        ROUND(f1.strikeouts/(f1.out_atBats+f1.hits+f1.walks+f1.hit_by_pitch+f1.sac),2) strikeout_rate,
+        ROUND(f1.walks/(f1.out_atBats+f1.hits+f1.walks+f1.hit_by_pitch+f1.sac),2) walk_rate,
+        ROUND(f1.home_runs/(f1.home_runs+f1.fly_balls)*100,2) hr_to_fly_ball_rate,
+        f1.games_played,
+        f1.outs+f1.hits at_bats,
+        f1.home_runs,
+        f1.hits,
+        f1.walks,
+        f1.hit_by_pitch,
+        f1.strikeouts,
+        f1.outs,
+        f1.sac,
+        f1.fly_balls,
+        f1.ground_balls,
+        f1.pop_ups,
+        ROUND(6.145 - 
+			16.986*(f1.strikeouts/(f1.hits+f1.out_atBats+f1.walks+f1.hit_by_pitch+f1.sac)) +
+            11.434*(f1.walks/(f1.hits+f1.out_atBats+f1.walks+f1.hit_by_pitch+f1.sac)) -
+            1.858*((f1.ground_balls-f1.fly_balls-f1.pop_ups)/(f1.hits+f1.out_atBats+f1.walks+f1.hit_by_pitch+f1.sac)) +
+            7.653*POW((f1.strikeouts/(f1.hits+f1.out_atBats+f1.walks+f1.hit_by_pitch+f1.sac)),2) -
+            ABS(6.664*POW(((f1.ground_balls-f1.fly_balls-f1.pop_ups)/(f1.hits+f1.out_atBats+f1.walks+f1.hit_by_pitch+f1.sac)),2)) +
+            10.130*(f1.strikeouts/(f1.hits+f1.out_atBats+f1.walks+f1.hit_by_pitch+f1.sac))*((f1.ground_balls-f1.fly_balls-f1.pop_ups)/(f1.hits+f1.out_atBats+f1.walks+f1.hit_by_pitch+f1.sac)) -
+            5.195*(f1.walks/(f1.hits+f1.out_atBats+f1.walks+f1.hit_by_pitch+f1.sac))*((f1.ground_balls-f1.fly_balls-f1.pop_ups)/(f1.hits+f1.out_atBats+f1.walks+f1.hit_by_pitch+f1.sac)),3)
+		SIERA,
+        ROUND(cf.cFip,3) cFIP
+FROM	(SELECT	pg.playerID,
+				substring(g.gameID,1,4) record_year,
+                count(distinct g.gameID) games_played,
 				SUM(CASE 
 						WHEN ab.event = 'Home Run' 
 							THEN 1 
-						ELSE 0
+						ELSE 0 
 					END) home_runs,
-				ROUND(SUM(pg.rbi)/COUNT(distinct pg.gameID),0) rbis,
-				SUM(CASE
-						WHEN ab.event = 'Single'
-							THEN 1
-						ELSE 0
-					END) singles,
-				SUM(CASE
-						WHEN ab.event = 'Double'
-							THEN 1
-						ELSE 0
-					END) doubles,
-				SUM(CASE
-						WHEN ab.event = 'Triple'
-							THEN 1
-						ELSE 0
-					END) triples,
 				SUM(CASE
 						WHEN ab.event = 'Walk'
 							THEN 1
 						ELSE 0
-					END) bb,
-				SUM(CASE
-						WHEN ab.event = 'Intent Walk'
-							THEN 1
-						ELSE 0
-					END) hbp,
+					END) walks,
 				SUM(CASE
 						WHEN ab.event = 'Hit By Pitch'
 							THEN 1
 						ELSE 0
-					END) ibb,
+					END) hit_by_pitch,
 				SUM(CASE
-						WHEN ab.event like '%Strikeout%'
+						WHEN ab.event IN ('Strikeout','Strikeout - DP')
 							THEN 1
 						ELSE 0
-					END) so,
+					END) strikeouts,
 				SUM(CASE
-						WHEN UPPER(ab.event) like '%SAC%'
-							THEN 1
-						ELSE 0
-					END) sac,
-				SUM(CASE
-						WHEN UPPER(ab.event) like '%FLY%'
+						WHEN UPPER(ab.event) LIKE '%FLY%'
 							THEN 1
 						ELSE 0
 					END) fly_balls,
 				SUM(CASE
-						WHEN UPPER(ab.event) like '%POP%'
+						WHEN 	UPPER(ab.event) LIKE '%OUT%' 
+							OR UPPER(ab.event) LIKE '%SAC%'
+							THEN 1
+						WHEN	UPPER(ab.event) LIKE '%DOUBLE PLAY%' 
+							OR UPPER(ab.event) LIKE '%DP%'
+							THEN 2
+						WHEN	UPPER(ab.event) LIKE '%TRIPLE PLAY%' 
+							THEN 3
+						ELSE 0
+					END) outs,
+				SUM(CASE WHEN	UPPER(ab.event) LIKE '%OUT%'
+							OR	UPPER(ab.event) LIKE '%SAC%'
+                            OR	UPPER(ab.event) LIKE '%DOUBLE PLAY%'
+                            OR 	UPPER(ab.event) LIKE '%DP%'
+                            OR	UPPER(ab.event) LIKE '%TRIPLE PLAY%' 
 							THEN 1
 						ELSE 0
-					END) pop_outs,
+					END) out_atbats,
 				SUM(CASE
-						WHEN UPPER(ab.event) like '%GROUND%'
+						WHEN ab.event IN ('Single','Double','Triple','Home Run')
+							THEN 1
+						ELSE 0
+					END) hits,
+				SUM(CASE
+						WHEN upper(ab.event) LIKE '%SAC%'
+							THEN 1
+						ELSE 0
+					END) sac,
+				SUM(CASE
+						WHEN upper(ab.event) LIKE '%GROUND%'
 							THEN 1
 						ELSE 0
 					END) ground_balls,
 				SUM(CASE
-						WHEN UPPER(ab.event) like '%ERROR%'
+						WHEN upper(ab.event) LIKE '%POP%'
 							THEN 1
 						ELSE 0
-					END) err,
-				SUM(CASE
-						WHEN UPPER(ab.event) like '%INTERFERENCE%'
-							THEN 1
-						ELSE 0
-					END) interference
+					END) pop_ups
 		FROM	game g
 		JOIN	player_game pg
-			ON	g.gameID = pg.gameID
-			AND g.type = 'R'
+			ON	pg.gameID = g.gameID 
+			AND g.type = 'R' 
+			AND	pg.game_position = 'P'
 		JOIN	atBat ab
-			ON	g.gameID = ab.gameID
-			AND	pg.playerID = ab.batter
-		GROUP BY 	pg.playerID,
-					substring(g.gameID,1,4)) ab1
-JOIN	(SELECT	r.playerID,
-				substring(g.gameID,1,4) record_year,
-				SUM(CASE 
-						WHEN r.event like 'Stolen Base%'
-							THEN 1
-						ELSE 0
-					END) sb,
-				SUM(CASE
-						WHEN 	r.event like 'Caught Stealing%'
-							OR	r.event like 'Picked off%'
-							THEN 1
-						ELSE 0
-					END) cs
-		FROM	game g
-		JOIN	runner r
-			ON	g.gameID = r.gameID
-			AND	g.type = 'R'
-		GROUP BY	r.playerID,
-					substring(g.gameID,1,4)) sb1
-	ON	ab1.playerID = sb1.playerID
-    AND	ab1.record_year = sb1.record_year
-JOIN 	(SELECT	bbx.id playerID,
-				substring(g.gameID,1,4) record_year,
-				SUM(r)	runs
-		FROM	game g
-		JOIN	batter_box bbx
-			ON	g.gameID = bbx.game_id
-			AND	g.type = 'R'
-		GROUP BY	bbx.id,
-					substring(g.gameID,1,4)) bbx1
-	ON	bbx1.playerID = sb1.playerID
-    AND	bbx1.record_year = sb1.record_year
+			ON	ab.gameID = g.gameID
+			AND	ab.pitcher = pg.playerID
+		GROUP BY pg.playerID, substring(g.gameID,1,4)) f1
 JOIN	(SELECT	substring(g.gameID,1,4) record_year,
-				SUM(r)	runs,
-				COUNT(1) pa
-		FROM	game g
-		JOIN	batter_box bbx
-			ON	g.gameID = bbx.game_id
-			AND	g.type = 'R'
-		GROUP BY	substring(g.gameID,1,4)) bbx1_lg
-	ON	bbx1_lg.record_year = sb1.record_year;
+				sum(pb.so) 				strikeouts,
+				sum(pb.hr) 				home_runs,
+				sum(pb.er) 				earned_runs,
+				sum(pb.out)				outs,
+				sum(pb.bb)				walks,
+				hbp.hit_by_pitch		hit_by_pitch,
+                hbp.fly_balls,
+				(sum(pb.er)/(sum(pb.out)/3)*9) -
+					(13*sum(pb.hr) + 3*(sum(pb.bb)+hbp.hit_by_pitch) - 2*sum(pb.so))/(sum(pb.out)/3) cFip
+		FROM 	game g
+		JOIN	pitcher_box pb
+			ON	g.type = 'R'
+			AND	g.gameID = pb.game_ID
+		JOIN	(SELECT	substring(g.gameID,1,4) record_year,
+						SUM(CASE 
+								WHEN ab.event = 'Hit By Pitch' 
+									THEN 1 
+								ELSE 0
+							END) hit_by_pitch,
+						SUM(CASE
+								WHEN UPPER(ab.event) LIKE '%FLY%'
+									THEN 1
+								ELSE 0
+							END) fly_balls
+				FROM	game g
+				JOIN	atBat ab
+					ON	ab.gameID = g.gameID
+					AND	g.type = 'R'
+				GROUP BY substring(g.gameID,1,4)) hbp
+			ON	hbp.record_year = substring(g.gameID,1,4)
+		GROUP BY substring(g.gameID,1,4)) cf
+	ON	cf.record_year = f1.record_year;
