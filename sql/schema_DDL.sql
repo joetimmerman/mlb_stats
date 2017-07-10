@@ -521,3 +521,18 @@ CREATE TABLE `player` (
   `position` varchar(5) DEFAULT NULL,
   PRIMARY KEY (`playerID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--create table of unique teams
+CREATE TABLE `team` (
+  `team_code` varchar(5) DEFAULT NULL,
+  `file_code` varchar(5) DEFAULT NULL,
+  `abbrev` varchar(5) DEFAULT NULL,
+  `teamID` int(11) NOT NULL,
+  `name` varchar(25) DEFAULT NULL,
+  `name_full` varchar(100) DEFAULT NULL,
+  `name_brief` varchar(25) DEFAULT NULL,
+  `division_id` int(11) DEFAULT NULL,
+  `league_id` int(11) DEFAULT NULL,
+  `league` varchar(50) DEFAULT NULL,
+  PRIMARY KEY (`teamID`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
