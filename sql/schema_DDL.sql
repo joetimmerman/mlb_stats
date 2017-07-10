@@ -400,5 +400,124 @@ CREATE TABLE `umpire_game` (
   PRIMARY KEY (`gameID`,`umpID`,`position`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+-- create table with stats for adv batting metrics by month
+CREATE TABLE `adv_batting_stats_month` (
+  `playerID` int(11) NOT NULL,
+  `record_month` varchar(10) NOT NULL,
+  `pa` int(11) DEFAULT NULL,
+  `home_runs` int(11) DEFAULT NULL,
+  `rbis` int(11) DEFAULT NULL,
+  `hits` int(11) DEFAULT NULL,
+  `walks` int(11) DEFAULT NULL,
+  `fly_balls` int(11) DEFAULT NULL,
+  `pop_outs` int(11) DEFAULT NULL,
+  `ground_balls` int(11) DEFAULT NULL,
+  `sb` int(11) DEFAULT NULL,
+  `cs` int(11) DEFAULT NULL,
+  `stolen_base_success_rate` double(5,3) DEFAULT NULL,
+  `batting_average` double(5,3) DEFAULT NULL,
+  `OBP` double(5,3) DEFAULT NULL,
+  `SLG` double(5,3) DEFAULT NULL,
+  `OPS` double(5,3) DEFAULT NULL,
+  `ISO` double(5,3) DEFAULT NULL,
+  `BABIP` double(5,3) DEFAULT NULL,
+  `bb_rate` double(5,3) DEFAULT NULL,
+  `so_rate` double(5,3) DEFAULT NULL,
+  `wRAA` float DEFAULT NULL,
+  `wRC` float DEFAULT NULL,
+  PRIMARY KEY (`playerID`,`record_month`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+ from adv_pitching_stats_year;
 
+-- create table with stats for adv batting metrics by year
+CREATE TABLE `adv_batting_stats_year` (
+  `playerID` int(11) NOT NULL,
+  `record_year` varchar(4) NOT NULL,
+  `pa` int(11) DEFAULT NULL,
+  `home_runs` int(11) DEFAULT NULL,
+  `rbis` int(11) DEFAULT NULL,
+  `hits` int(11) DEFAULT NULL,
+  `walks` int(11) DEFAULT NULL,
+  `fly_balls` int(11) DEFAULT NULL,
+  `pop_outs` int(11) DEFAULT NULL,
+  `ground_balls` int(11) DEFAULT NULL,
+  `sb` int(11) DEFAULT NULL,
+  `cs` int(11) DEFAULT NULL,
+  `stolen_base_success_rate` double(5,3) DEFAULT NULL,
+  `batting_average` double(5,3) DEFAULT NULL,
+  `OBP` double(5,3) DEFAULT NULL,
+  `SLG` double(5,3) DEFAULT NULL,
+  `OPS` double(5,3) DEFAULT NULL,
+  `ISO` double(5,3) DEFAULT NULL,
+  `BABIP` double(5,3) DEFAULT NULL,
+  `bb_rate` double(5,3) DEFAULT NULL,
+  `so_rate` double(5,3) DEFAULT NULL,
+  `wRAA` float DEFAULT NULL,
+  `wRC` float DEFAULT NULL,
+  PRIMARY KEY (`playerID`,`record_year`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+-- create table with stats for adv pitching metrics by month
+CREATE TABLE `adv_pitching_stats_month` (
+  `playerID` int(11) NOT NULL,
+  `record_month` varchar(10) NOT NULL,
+  `FIP` float DEFAULT NULL,
+  `WHIP` float DEFAULT NULL,
+  `xFIP` float DEFAULT NULL,
+  `strikeout_rate` double(5,3) DEFAULT NULL,
+  `walk_rate` double(5,3) DEFAULT NULL,
+  `hr_to_fly_ball_rate` double(5,3) DEFAULT NULL,
+  `games_played` int(11) DEFAULT NULL,
+  `at_bats` int(11) DEFAULT NULL,
+  `home_runs` int(11) DEFAULT NULL,
+  `hits` int(11) DEFAULT NULL,
+  `walks` int(11) DEFAULT NULL,
+  `hit_by_pitch` int(11) DEFAULT NULL,
+  `strikeouts` int(11) DEFAULT NULL,
+  `outs` int(11) DEFAULT NULL,
+  `sac` int(11) DEFAULT NULL,
+  `fly_balls` int(11) DEFAULT NULL,
+  `ground_balls` int(11) DEFAULT NULL,
+  `pop_ups` int(11) DEFAULT NULL,
+  `SIERA` float DEFAULT NULL,
+  `cFIP` float DEFAULT NULL,
+  PRIMARY KEY (`playerID`,`record_month`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- create table with stats for adv pitching metrics by year
+CREATE TABLE `adv_pitching_stats_year` (
+  `playerID` int(11) NOT NULL,
+  `record_year` varchar(4) NOT NULL,
+  `FIP` double(10,5) DEFAULT NULL,
+  `WHIP` double(10,5) DEFAULT NULL,
+  `xFIP` double(10,5) DEFAULT NULL,
+  `strikeout_rate` double(5,3) DEFAULT NULL,
+  `walk_rate` double(5,3) DEFAULT NULL,
+  `hr_to_fly_ball_rate` double(6,3) DEFAULT NULL,
+  `games_played` int(11) DEFAULT NULL,
+  `at_bats` int(11) DEFAULT NULL,
+  `home_runs` int(11) DEFAULT NULL,
+  `hits` int(11) DEFAULT NULL,
+  `walks` int(11) DEFAULT NULL,
+  `hit_by_pitch` int(11) DEFAULT NULL,
+  `strikeouts` int(11) DEFAULT NULL,
+  `outs` int(11) DEFAULT NULL,
+  `sac` int(11) DEFAULT NULL,
+  `fly_balls` int(11) DEFAULT NULL,
+  `ground_balls` int(11) DEFAULT NULL,
+  `pop_ups` int(11) DEFAULT NULL,
+  `SIERA` float DEFAULT NULL,
+  `cFIP` float DEFAULT NULL,
+  PRIMARY KEY (`playerID`,`record_year`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--create table of unique players
+CREATE TABLE `player` (
+  `playerID` int(11) NOT NULL,
+  `first_name` varchar(45) DEFAULT NULL,
+  `last_name` varchar(45) DEFAULT NULL,
+  `rl_throws` varchar(2) DEFAULT NULL,
+  `rl_bats` varchar(2) DEFAULT NULL,
+  `position` varchar(5) DEFAULT NULL,
+  PRIMARY KEY (`playerID`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
