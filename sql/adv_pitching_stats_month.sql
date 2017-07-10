@@ -1,9 +1,9 @@
 SELECT	f1.playerID,
 		f1.record_month,
-		ROUND((13*f1.home_runs + 3*(f1.hit_by_pitch+f1.walks) - 2*f1.strikeouts)/(f1.outs/3) + cf.cFip,3) fip,
-        ROUND((f1.walks+f1.hits)/(f1.outs/3),3) whip,
-        ROUND((f1.hits-f1.home_runs)/(f1.outs+f1.hits+f1.sac-f1.strikeouts-f1.home_runs),3) babip,
-        ROUND(((13*f1.fly_balls*(cf.home_runs/cf.fly_balls)) + 3*(f1.walks+f1.hit_by_pitch) - 2*f1.strikeouts)/(f1.outs/3) + cf.cFip,3) xFip,
+		ROUND((13*f1.home_runs + 3*(f1.hit_by_pitch+f1.walks) - 2*f1.strikeouts)/(f1.outs/3) + cf.cFip,3) FIP,
+        ROUND((f1.walks+f1.hits)/(f1.outs/3),3) WHIP,
+        ROUND((f1.hits-f1.home_runs)/(f1.outs+f1.hits+f1.sac-f1.strikeouts-f1.home_runs),3) BABIP,
+        ROUND(((13*f1.fly_balls*(cf.home_runs/cf.fly_balls)) + 3*(f1.walks+f1.hit_by_pitch) - 2*f1.strikeouts)/(f1.outs/3) + cf.cFip,3) xFIP,
         f1.strikeouts/(f1.out_atBats+f1.hits+f1.walks+f1.hit_by_pitch+f1.sac) strikeout_rate,
         f1.walks/(f1.out_atBats+f1.hits+f1.walks+f1.hit_by_pitch+f1.sac) walk_rate,
         f1.home_runs/(f1.home_runs+f1.fly_balls)*100 hr_to_fly_ball_rate,
@@ -28,7 +28,7 @@ SELECT	f1.playerID,
             10.130*(f1.strikeouts/(f1.hits+f1.out_atBats+f1.walks+f1.hit_by_pitch+f1.sac))*((f1.ground_balls-f1.fly_balls-f1.pop_ups)/(f1.hits+f1.out_atBats+f1.walks+f1.hit_by_pitch+f1.sac)) -
             5.195*(f1.walks/(f1.hits+f1.out_atBats+f1.walks+f1.hit_by_pitch+f1.sac))*((f1.ground_balls-f1.fly_balls-f1.pop_ups)/(f1.hits+f1.out_atBats+f1.walks+f1.hit_by_pitch+f1.sac)),3)
 		SIERA,
-        ROUND(cf.cFip,3) cFip
+        ROUND(cf.cFip,3) cFIP
 FROM	(SELECT	pg.playerID,
 				substring(g.gameID,1,7) record_month,
                 count(distinct g.gameID) games_played,
