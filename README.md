@@ -153,11 +153,7 @@ These methods do not run as part of the main load process.
 
 This file loads the tables with the select statements created by the SQL scripts in the SQL folder.
 
-###  analytics
-
-As  the name implies, this folder contains all of the Python scripts used for analytics.
-
-#### three_zero_counts.py
+### three_zero_counts.py
 
 This script pulls all three_zero_counts from a view which joins: game, atBat, pitch, adv_pitching_stats_year, taking only atBats that do not results in sacrifices, interference, hit by pitch, intentional walks, or errors, then finds all at Bats that result in 3-0 counts, calculates the expected number of bases using:
 	1*P(Single) + 1*P(Walk) + 2*P(Double) + 3*P(Triple) + 4*P(Home Run)
