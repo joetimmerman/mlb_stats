@@ -13,27 +13,77 @@ import warnings
 warnings.filterwarnings("ignore", category = pymysql.Warning)
 
 passFile = 'C:\\Users\\evan.marcey\\Documents\\mlb_stats\\pass.csv'
-
-aws_username = ''
-aws_password = ''
-
-with open(passFile,'r') as pf:
-	pfr = csv.reader(pf)
-	for row in pfr:
-		if row[0] == 'username':
-			aws_username = row[1]
-		elif row[0] == 'pass':
-			aws_password = row[1]
-
-#create connection to AWS MySQL server
-connection = pymysql.connect(host='baseball.cfelhfqsawiy.us-east-1.rds.amazonaws.com',
-							 port=3306,
-							 user=aws_username,
-							 db='mlb_data_test',
-							 password=aws_password,
-							 charset='utf8mb4',
-							 cursorclass=pymysql.cursors.DictCursor)
-conn = connection.cursor()
+#method openConnection creates a connection to the AWS instance and a cursor for that connection	
+#output: connection & cursor objects
+def openConnection():
+	aws_username = ''
+	aws_password = ''
+	connection = ''
+	conn = ''
+	with open(passFile,'r') as pf:
+		pfr = csv.reader(pf)
+		for row in pfr:
+			if row[0] == 'username':
+				aws_username = row[1]
+			elif row[0] == 'pass':
+				aws_password = row[1]
+			
+	try:
+		print('Opening connection...')
+		connection = pymysql.connect(host='baseball.cfelhfqsawiy.us-east-1.rds.amazonaws.com',
+									port=3306,
+									user=aws_username,
+									db='mlb_data_test',
+									password=aws_password,
+									charset='utf8mb4',
+									cursorclass=pymysql.cursors.DictCursor)
+		conn = connection.cursor()
+		print('Connected.\n')
+	except pymysql.err.OperationalError as err:
+		print('Unable to connect to server.')
+	except:
+		print('Unhandled connection error:')
+		print(sys.exc_info())
+		
+	return(connection,conn)
+	
+#method getSQL runs a sql script and returns the result
+#input: query_file - filename with file path on local directory to runs
+#output: query_result - dict format result of query
+def getSQL(query_file):
+	st = time.time()
+	connection,conn = openConnection()
+	with open(query_file,'r') as qf:
+		query = qf.read()
+	print('Fetching SQL query for {fn}...'.format(fn=query_file))
+	conn.execute(query)
+	query_result = conn.fetchall()
+	print('Query fetched.')
+	et = time.time()
+	print('Query ran in {ti} seconds.\n'.format(ti=round(et-st)))
+	return(query_result)
+	
+def mannWhitney(array1,array2):
+	len1 = len(array1)
+	len2 = len(array2)
+	
+	sumRanks = 0
+	
+	for a in array1:
+		for b in array2:
+			if a > b:
+				sumRanks += 1
+			elif a == b:
+				sumRanks += 0.5
+				
+	uStatistic = sumRanks - (len1*(len1+1))/2
+	meanU = (len1*len2)/2
+	sigmaU = ((len1*len2*(len1+len2+1))/12)**0.5
+	
+	zScore = (uStatistic - meanU)/sigmaU
+	return(zScore)
+	
+connection,conn = openConnection()
 
 errorDir = 'C:\\Users\\evan.marcey\\Documents\\mlb_stats\\error_logs\\'
 archiveDir = 'C:\\Users\\evan.marcey\\Documents\\mlb_stats\\error_logs\\error_archive\\'
