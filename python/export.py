@@ -2,20 +2,9 @@ import csv
 import pymysql
 import pymysql.cursors
 import sys
+import mlbStats
 
 mlbData = 'C:\\Users\\evan.marcey\\Documents\\GitHub\\mlb_stats\\data\\'
-passFile = 'C:\\Users\\evan.marcey\\Documents\\mlb_stats\\pass.csv'
-
-aws_username = ''
-aws_password = ''
-
-with open(passFile,'r') as pf:
-	pfr = csv.reader(pf)
-	for row in pfr:
-		if row[0] == 'username':
-			aws_username = row[1]
-		elif row[0] == 'pass':
-			aws_password = row[1]
 	
 tables = [
 	'game',
@@ -72,14 +61,7 @@ def fetchAndWrite(table, conn):
 		
 def export():
 	try:
-		connection = pymysql.connect(host='baseball.cfelhfqsawiy.us-east-1.rds.amazonaws.com',
-									 port=3306,
-									 user=aws_username,
-									 db='mlb_data_test',
-									 password=aws_password,
-									 charset='utf8mb4',
-									 cursorclass=pymysql.cursors.DictCursor)
-		conn = connection.cursor()
+		connection,conn = mlbStats.openConnection()
 		
 		if len(sys.argv) == 1:
 			for table in tables:
