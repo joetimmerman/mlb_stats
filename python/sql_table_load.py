@@ -3,11 +3,11 @@ import pymysql
 import sys
 import mlbStats
 import sys
+import mlbStats
 
 pymysql.pooling = False
 
 sqlDir = 'C:\\Users\\evan.marcey\\Documents\\GitHub\\mlb_stats\\sql\\'
-passFile = 'C:\\Users\\evan.marcey\\Documents\\mlb_stats\\pass.csv'
 
 sqlFiles = [
 	'adv_pitching_stats_year.sql',
@@ -17,42 +17,10 @@ sqlFiles = [
 	'player.sql',
 	'team.sql'
 ]
-
-def openConnection():
-	aws_username = ''
-	aws_password = ''
-	connection = ''
-	conn = ''
-	with open(passFile,'r') as pf:
-		pfr = csv.reader(pf)
-		for row in pfr:
-			if row[0] == 'username':
-				aws_username = row[1]
-			elif row[0] == 'pass':
-				aws_password = row[1]
-			
-	try:
-		print('Opening connection...')
-		connection = pymysql.connect(host='baseball.cfelhfqsawiy.us-east-1.rds.amazonaws.com',
-									port=3306,
-									user=aws_username,
-									db='mlb_data_test',
-									password=aws_password,
-									charset='utf8mb4',
-									cursorclass=pymysql.cursors.DictCursor)
-		conn = connection.cursor()
-		print('Connected.\n')
-	except pymysql.err.OperationalError as err:
-		print('Unable to connect to server.')
-	except:
-		print('Unhandled connection error:')
-		print(sys.exc_info())
-		
-	return(connection,conn)
-		
+	
 for sqlFile in sqlFiles:
 	try:
-		connection, conn = openConnection()
+		connection, conn = mlbStats.openConnection()
 		
 		print('Processing {tn}'.format(tn=sqlFile))
 		print('\tReading {tn}...'.format(tn=sqlFile))
