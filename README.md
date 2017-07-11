@@ -84,6 +84,7 @@ Python script to export all or some of the tables. If passed without additional 
 * adv_pitching_stats_month
 * adv_pitching_stats_year
 * player
+* team
 
 Otherwise, passing a table name as an argument will extract that single table.
 
@@ -151,3 +152,17 @@ These methods do not run as part of the main load process.
 ### sql_data_load.py
 
 This file loads the tables with the select statements created by the SQL scripts in the SQL folder.
+
+###  analytics
+
+As  the name implies, this folder contains all of the Python scripts used for analytics.
+
+#### three_zero_counts.py
+
+This script pulls all three_zero_counts from a view which joins: game, atBat, pitch, adv_pitching_stats_year, taking only atBats that do not results in sacrifices, interference, hit by pitch, intentional walks, or errors, then finds all at Bats that result in 3-0 counts, calculates the expected number of bases using:
+	1*P(Single) + 1*P(Walk) + 2*P(Double) + 3*P(Triple) + 4*P(Home Run)
+broken down by whether the batter swings at the 3-0 pitch or not.
+
+It prints the expected values, variance and standard deviation for both of these cases, as well as for all 3-0 counts, and for all at bats.
+
+It then calculates the Pearson correlation for % 3-0 counts for a pitcher against FIP, WHIP, xFIP, SIERA, k rate, bb rate, and hr to fly ball rate.
