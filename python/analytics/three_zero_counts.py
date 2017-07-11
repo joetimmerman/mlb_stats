@@ -1,3 +1,5 @@
+#import statements
+#may need cleaning up
 import csv
 import pymysql
 import pymysql.cursors
@@ -6,12 +8,14 @@ import numpy as np
 import pandas as pd
 from scipy.stats.stats import pearsonr
 import time
-from itertools import groupby
+from tabulate import tabulate
 
+#file directories and password location
 mlbData = 'C:\\Users\\evan.marcey\\Documents\\GitHub\\mlb_stats\\data\\'
 mlbSql = 'C:\\Users\\evan.marcey\\Documents\\GitHub\\mlb_stats\\sql\\'
 passFile = 'C:\\Users\\evan.marcey\\Documents\\mlb_stats\\pass.csv'
 
+#get password from pass file
 aws_username = ''
 aws_password = ''
 
@@ -22,7 +26,9 @@ with open(passFile,'r') as pf:
 			aws_username = row[1]
 		elif row[0] == 'pass':
 			aws_password = row[1]
-			
+	
+#method openConnection creates a connection to the AWS instance and a cursor for that connection	
+#output: connection & cursor objects
 def openConnection():
 	aws_username = ''
 	aws_password = ''
@@ -55,6 +61,9 @@ def openConnection():
 		
 	return(connection,conn)
 	
+#method getSQL runs a sql script and returns the result
+#input: query_file - filename with file path on local directory to runs
+#output: query_result - dict format result of query
 def getSQL(query_file):
 	st = time.time()
 	connection,conn = openConnection()
@@ -68,19 +77,16 @@ def getSQL(query_file):
 	print('Query ran in {ti} seconds.\n'.format(ti=round(et-st)))
 	return(query_result)
 	
+#get data from pitch_game_atBat view
 pitchFile = 'pitch_game_atBat.sql'
-abFile = 'some_atbats.sql'
-playerFile = 'getPlayers.sql'
-
 pitchArray = getSQL(mlbSql+pitchFile)
-#atBatArray = getSQL(mlbSql+abFile)
-#playerArray = getSQL(mlbSql+playerFile)
 
 rSwing = []
 rNoSwing = []
 allAtBats = []
 threeZeroArray = []
 
+#list of correlation objects
 corList = [
 	['FIP', [],[]],
 	['WHIP', [],[]],
@@ -91,6 +97,8 @@ corList = [
 	['hr_to_fly_ball_rate', [],[]]
 ]
 
+#first, iterate through the returned query to locate all 3-0 counts
+#additionally, determine if batter swung on pitch & num_bases for that atBat
 st = time.time()
 print('Finding 3-0 counts...')
 for i in range(4,len(pitchArray)):
@@ -134,27 +142,44 @@ for i in range(4,len(pitchArray)):
 et = time.time()
 print('3-0 counts found in {ti} seconds.\n'.format(ti=round(et-st)))
 
+#create dataFrame from pitches
 pitchDF = pd.DataFrame(data=[pitchArray[i].values() for i in range(4,len(pitchArray))],columns=pitchArray[5].keys())
 
+#create grouped data frame by at bat so that we can get the overall expected number of bases
 print('Grouping by at bat...')
 st = time.time()
 atBatDF = pitchDF.groupby(['gameID','atBatNum','event','num_bases'])\
 			['is_three_zero_count'].max()
-			
 for index, row in atBatDF.iteritems():
 	allAtBats.append(index[3])
-
 et = time.time()
 print('At bats grouped in {ti} seconds.\n'.format(ti=round(et-st)))
 	
-st = time.time()
+#created grouped data frame by pitcher so that we can get pitcher-specific statistics
 print('Grouping by pitchers...')
+st = time.time()
 pitcherDF = pitchDF.groupby(['pitcher','record_year','p_throws','FIP','WHIP','xFIP','SIERA','strikeout_rate','walk_rate','hr_to_fly_ball_rate','outs']).\
 			agg({'is_three_zero_count': ['sum','count']})
 
+three_zero_rl = [
+	'all',[],
+	'r',[],
+	'l',[]
+]
+#then iterate through those pitcher groups to find the frequency with which they throw 3-0 counts
+#only include pitchers with at least 50 outs in the season
+#assign each set of cor variables and three_zero_ratio to the corList if values exist		
 for index, row in pitcherDF.iterrows():
 	three_zero_ratio = row.values[0]/row.values[1]
+	
 	if three_zero_ratio > 0 and index[10] > 50:
+	
+		three_zero_rl[0][1].append(three_zero_ratio)
+		if index[2] == 'r':
+			three_zero_rl[1][1].append(three_zero_ratio)
+		elif index[2] == 'l':
+			three_zero_rl[2][1].append(three_zero_ratio)
+			
 		for i in range(3,10):
 			if index[i] > 0:
 				corList[i-3][1].append(three_zero_ratio)
@@ -162,27 +187,52 @@ for index, row in pitcherDF.iterrows():
 				
 et = time.time()
 print('Pitchers grouped in {ti} seconds.\n'.format(ti=round(et-st)))
-				
-print('Expected bases on 3-0 count:')
-print('If batter swings:\t\t{ev}'.format(ev=round(np.mean(rSwing),3)))
-print('If batter does not swing:\t{ev}'.format(ev=round(np.mean(rNoSwing),3)))
-print('For all 3-0 counts:\t\t{ev}'.format(ev=round(np.mean(rSwing+rNoSwing),3)))
-print('For all at bats:\t\t{ev}'.format(ev=round(np.mean(allAtBats),3)))
 
-print('\nVariance of expected bases on 3-0 count:')
-print('If batter swings:\t\t{ev}'.format(ev=round(np.var(rSwing),3)))
-print('If batter does not swing:\t{ev}'.format(ev=round(np.var(rNoSwing),3)))
-print('For all 3-0 counts:\t\t{ev}'.format(ev=round(np.var(rSwing+rNoSwing),3)))
-print('For all at bats:\t\t{ev}'.format(ev=round(np.var(allAtBats),3)))
+#use tabulate module to print table of 3-0 count expected bases results
+print('Stats for Expected Bases:')
+ebRows = [
+	[
+		'Batter Swings',round(np.mean(rSwing),3),
+		round(np.var(rSwing),3),
+		round(np.std(rSwing),3)
+	],
+	[
+		'Batter Does Not Swing',
+		round(np.mean(rNoSwing),3),
+		round(np.var(rNoSwing),3),
+		round(np.std(rNoSwing),3)
+	],
+	[
+		'All 3-0 Counts',
+		round(np.mean(rSwing+rNoSwing),3),
+		round(np.var(rSwing+rNoSwing),3),
+		round(np.std(rSwing+rNoSwing),3)
+	],
+	[
+		'Overall',
+		round(np.mean(allAtBats),3),
+		round(np.var(allAtBats),3),
+		round(np.std(allAtBats),3)
+	]
+]
+ebHeaders = ['','Expected Bases','Variance','Standard Deviation']
+print(tabulate(ebRows,headers=ebHeaders))
 
-print('\nStandard Deviation of expected bases on 3-0 count:')
-print('If batter swings:\t\t{ev}'.format(ev=round(np.std(rSwing),3)))
-print('If batter does not swing:\t{ev}'.format(ev=round(np.std(rNoSwing),3)))
-print('For all 3-0 counts:\t\t{ev}'.format(ev=round(np.std(rSwing+rNoSwing),3)))
-print('For all at bats:\t\t{ev}'.format(ev=round(np.std(allAtBats),3)))
-
-
-print('\nPearson Correlation for core statistics:')
+#Then calculate pearson correlation for each of the corList variables against three_zero_ratio
+print('\nStats for Pitchers:')
+print('\tPearson Correlation for core statistics:')
 for cor in corList:
+	print(cor[0])
+	print(len(cor[1]))
+	print(len(cor[2]))
+	print(np.mean(cor[1]))
+	print(np.mean(cor[2]))
 	cor.append(pearsonr(cor[1],cor[2]))
-	print('{c1}:\t{c2}'.format(c1=cor[0],c2=cor[3]))
+	print('\t{c1}:\t{c2}'.format(c1=cor[0],c2=cor[3]))
+
+#Additionally, calculate the difference between the Left- and Right-handed pitchers and frequency of 3-0 counts
+print('\t3-0 Frequency by L-R Handedness:')
+print('\tAverage 3-0 Frequency:')
+print('Overall:\t{ev}'.format(ev=round(np.mean(three_zero_rl[0][1]),3)))
+print('Righties:\t{ev}'.format(ev=round(np.mean(three_zero_rl[1][1]),3)))
+print('Lefties:\t{ev}'.format(ev=round(np.mean(three_zero_rl[2][1]),3)))
