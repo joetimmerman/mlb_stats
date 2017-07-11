@@ -158,7 +158,7 @@ for index, row in pitcherDF.iterrows():
 		for i in range(3,10):
 			if index[i] > 0:
 				corList[i-3][1].append(three_zero_ratio)
-				corList[i-3][2].append(index[3])
+				corList[i-3][2].append(index[i])
 				
 et = time.time()
 print('Pitchers grouped in {ti} seconds.\n'.format(ti=round(et-st)))
