@@ -162,10 +162,11 @@ pitcherDF = pitchDF.groupby(['pitcher','record_year','p_throws','FIP','WHIP','xF
 			agg({'is_three_zero_count': ['sum','count']})
 
 three_zero_rl = [
-	'all',[],
-	'r',[],
-	'l',[]
+	['all',[]],
+	['r',[]],
+	['l',[]]
 ]
+
 #then iterate through those pitcher groups to find the frequency with which they throw 3-0 counts
 #only include pitchers with at least 50 outs in the season
 #assign each set of cor variables and three_zero_ratio to the corList if values exist		
@@ -174,11 +175,11 @@ for index, row in pitcherDF.iterrows():
 	
 	if three_zero_ratio > 0 and index[10] > 50:
 	
-		three_zero_rl[0][1].append(three_zero_ratio)
-		if index[2] == 'r':
-			three_zero_rl[1][1].append(three_zero_ratio)
-		elif index[2] == 'l':
-			three_zero_rl[2][1].append(three_zero_ratio)
+		#three_zero_rl[0][1].append(three_zero_ratio)
+		#if index[2] == 'r':
+		#	three_zero_rl[1][1].append(three_zero_ratio)
+		#elif index[2] == 'l':
+		#	three_zero_rl[2][1].append(three_zero_ratio)
 			
 		for i in range(3,10):
 			if index[i] > 0:
@@ -192,7 +193,8 @@ print('Pitchers grouped in {ti} seconds.\n'.format(ti=round(et-st)))
 print('Stats for Expected Bases:')
 ebRows = [
 	[
-		'Batter Swings',round(np.mean(rSwing),3),
+		'Batter Swings',
+		round(np.mean(rSwing),3),
 		round(np.var(rSwing),3),
 		round(np.std(rSwing),3)
 	],
@@ -221,18 +223,28 @@ print(tabulate(ebRows,headers=ebHeaders))
 #Then calculate pearson correlation for each of the corList variables against three_zero_ratio
 print('\nStats for Pitchers:')
 print('\tPearson Correlation for core statistics:')
+pearsonRows = []
+pearsonHeaders = ['Metric','R-Squared','P-Value']
 for cor in corList:
 	print(cor[0])
 	print(len(cor[1]))
 	print(len(cor[2]))
 	print(np.mean(cor[1]))
 	print(np.mean(cor[2]))
-	cor.append(pearsonr(cor[1],cor[2]))
-	print('\t{c1}:\t{c2}'.format(c1=cor[0],c2=cor[3]))
+	tempPearson = pearsonr(cor[1],cor[2])
+	cor.append(tempPearson[0])
+	cor.append(tempPearson[1])
+	pearsonRows.append([cor[0],cor[3],cor[4]])
+
+print(tabulate(pearsonRows,headers=pearsonHeaders)
 
 #Additionally, calculate the difference between the Left- and Right-handed pitchers and frequency of 3-0 counts
+tzRows = []
+tzHeaders = ['Handedness','Mean','Variance','Standard Deviation']
+for tz in three_zero_rl:
+	tz.append(np.mean(tz[1]))
+	tz.append(np.var(tz[1]))
+	tz.append(np.std(tz[1]))
+	tzRows.append([tz[0],tz[2],tz[3],tz[4]])
 print('\t3-0 Frequency by L-R Handedness:')
-print('\tAverage 3-0 Frequency:')
-print('Overall:\t{ev}'.format(ev=round(np.mean(three_zero_rl[0][1]),3)))
-print('Righties:\t{ev}'.format(ev=round(np.mean(three_zero_rl[1][1]),3)))
-print('Lefties:\t{ev}'.format(ev=round(np.mean(three_zero_rl[2][1]),3)))
+print(tabulate(tzRows,headers=tzHeaders))
