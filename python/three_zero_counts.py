@@ -29,6 +29,7 @@ zNoSwing = 0
 allAtBats = []
 zAtBats = 0
 threeZeroArray = []
+pitchTypes = []
 
 #list of correlation objects
 corList = [
@@ -46,6 +47,8 @@ corList = [
 st = time.time()
 print('Finding 3-0 counts...')
 for i in range(4,len(pitchArray)):
+
+	pitchArray[i]['atBat_key'] = str(pitchArray[i]['atBatNum']) + ' ' +str(pitchArray[i]['gameID'])
 	pitchArray[i]['is_three_zero_count'] = 0
 	
 	if pitchArray[i]['des'] == 'Ball' or pitchArray[i]['des'] == 'Called Strike':
@@ -63,6 +66,7 @@ for i in range(4,len(pitchArray)):
 		pitchArray[i]['num_bases'] = 4
 	else:
 		pitchArray[i]['num_bases'] = 0
+	
 		
 	if pitchArray[i]['gameID'] == pitchArray[i-1]['gameID'] and\
 	pitchArray[i]['atBatNum'] == pitchArray[i-1]['atBatNum'] and\
@@ -85,7 +89,10 @@ for i in range(4,len(pitchArray)):
 					else:
 						rNoSwing.append(pitchArray[i]['num_bases'])
 						if pitchArray[i]['num_bases'] == 0:
-							zSwing+=1
+							zNoSwing+=1
+							
+	if pitchArray[i]['pitch_desc'] != 'UN':
+		pitchTypes.append(pitchArray[i])
 							
 et = time.time()
 print('3-0 counts found in {ti} seconds.\n'.format(ti=round(et-st)))
@@ -96,23 +103,40 @@ pitchDF = pd.DataFrame(data=[pitchArray[i].values() for i in range(4,len(pitchAr
 #create grouped data frame by at bat so that we can get the overall expected number of bases
 print('Grouping by at bat...')
 st = time.time()
-atBatDF = pitchDF.groupby(['gameID','atBatNum','event','num_bases'])\
-			['is_three_zero_count'].max()
+atBatDF = pitchDF.groupby(['gameID',\
+                            'atBatNum',\
+                            'event',\
+                            'num_bases'
+                            ])\
+                            ['is_three_zero_count'].max()
 for index, row in atBatDF.iteritems():
 	allAtBats.append(index[3])
+	if index[3] == 0:
+		zAtBats += 1
 et = time.time()
 print('At bats grouped in {ti} seconds.\n'.format(ti=round(et-st)))
 	
 #created grouped data frame by pitcher so that we can get pitcher-specific statistics
 print('Grouping by pitchers...')
 st = time.time()
-pitcherDF = pitchDF.groupby(['pitcher','record_year','p_throws','FIP','WHIP','xFIP','SIERA','strikeout_rate','walk_rate','hr_to_fly_ball_rate','outs']).\
-			agg({'is_three_zero_count': ['sum','count']})
+pitcherDF = pitchDF.groupby(['pitcher',\
+                            'record_year',\
+                            'p_throws',\
+                            'FIP',\
+                            'WHIP',\
+                            'xFIP',\
+                            'SIERA',\
+                            'strikeout_rate',\
+                            'walk_rate',\
+                            'hr_to_fly_ball_rate',\
+                            'outs'
+                            ]).\
+                            agg({'is_three_zero_count': ['sum','count']})
 
 three_zero_rl = [
-	['all',[]],
-	['R',[]],
-	['L',[]]
+	['All',[]],
+	['Right',[]],
+	['Left',[]]
 ]
 
 #then iterate through those pitcher groups to find the frequency with which they throw 3-0 counts
@@ -138,31 +162,35 @@ print('Pitchers grouped in {ti} seconds.\n'.format(ti=round(et-st)))
 
 #use tabulate module to print table of 3-0 count expected bases results
 print('Stats for Expected Bases:')
-ebHeaders = ['Swings','Expected Bases','Variance','Standard Deviation']
+ebHeaders = ['Swings','Expected Bases','Variance','Standard Deviation','Zero Base Probability']
 ebRows = [
 	[
 		'Overall',
 		round(np.mean(allAtBats),3),
 		round(np.var(allAtBats),3),
-		round(np.std(allAtBats),3)
+		round(np.std(allAtBats),3),
+		round(zAtBats/len(allAtBats),3)
 	],
 	[
 		'All 3-0 Counts',
 		round(np.mean(rSwing+rNoSwing),3),
 		round(np.var(rSwing+rNoSwing),3),
-		round(np.std(rSwing+rNoSwing),3)
+		round(np.std(rSwing+rNoSwing),3),
+		round((zSwing+zNoSwing)/(len(rSwing)+len(rNoSwing)),3)
 	],
 	[
 		'Batter Swings',
 		round(np.mean(rSwing),3),
 		round(np.var(rSwing),3),
-		round(np.std(rSwing),3)
+		round(np.std(rSwing),3),
+		round((zSwing)/(len(rSwing)),3)
 	],
 	[
 		'Batter Does Not Swing',
 		round(np.mean(rNoSwing),3),
 		round(np.var(rNoSwing),3),
-		round(np.std(rNoSwing),3)
+		round(np.std(rNoSwing),3),
+		round((zNoSwing)/(len(rNoSwing)),3)
 	]
 ]
 print(tabulate(ebRows,headers=ebHeaders))
@@ -170,10 +198,10 @@ print(tabulate(ebRows,headers=ebHeaders))
 print('\nConfidence Swinging and Not Swinging have different Expected Bases:')
 print('Z-Score:\t{mw}'.format(mw=round(mlbStats.mannWhitney(rSwing,rNoSwing),2)))
 
-#Then calculate pearson correlation for each of the corList variables against three_zero_ratio
+#calculate pearson correlation for each of the corList variables against three_zero_ratio
 print('\nPearson Correlation for core pitching metrics:')
 pearsonRows = []
-pearsonHeaders = ['Metric','PearsonR-Squared','P-Value']
+pearsonHeaders = ['Metric','R-Squared','P-Value']
 
 for cor in corList:
 	tempPearson = pearsonr(cor[1],cor[2])
@@ -184,7 +212,7 @@ for cor in corList:
 
 print(tabulate(pearsonRows,headers=pearsonHeaders))
 
-#Additionally, calculate the difference between the Left- and Right-handed pitchers and frequency of 3-0 counts
+#calculate the difference between the Left- and Right-handed pitchers and frequency of 3-0 counts
 tzRows = []
 tzKSRows = []
 tzHeaders = ['Handedness','Mean','Variance','Standard Deviation']
@@ -201,3 +229,9 @@ print(tabulate(tzRows,headers=tzHeaders))
 
 print('\nConfidence Left- and Right-handed pitchers have different 3-0 frequencies:')
 print('Z-Score:\t{mw}'.format(mw=round(mlbStats.mannWhitney(three_zero_rl[1][1],three_zero_rl[2][1]),2)))
+
+#three_zero pitch type
+pitchTypeDF = pd.DataFrame(data=[pitchTypes[i].values() for i in range(4,len(pitchTypes))],columns=pitchArray[5].keys())
+aggPitchTypeDF = pitchTypeDF.groupby(['pitch_type','pitch_desc','is_three_zero_count']).\
+    agg({'is_three_zero_count':'count','pitch_speed':'mean','num_bases':'mean','spin_rate':'mean'})
+print(aggPitchTypeDF.head())
