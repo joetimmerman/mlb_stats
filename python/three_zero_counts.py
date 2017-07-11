@@ -232,6 +232,32 @@ print('Z-Score:\t{mw}'.format(mw=round(mlbStats.mannWhitney(three_zero_rl[1][1],
 
 #three_zero pitch type
 pitchTypeDF = pd.DataFrame(data=[pitchTypes[i].values() for i in range(4,len(pitchTypes))],columns=pitchArray[5].keys())
-aggPitchTypeDF = pitchTypeDF.groupby(['pitch_type','pitch_desc','is_three_zero_count']).\
-    agg({'is_three_zero_count':'count','pitch_speed':'mean','num_bases':'mean','spin_rate':'mean'})
+
+pitchTypeDF.pitch_speed = pitchTypeDF.pitch_speed.astype(float)
+pitchTypeDF.num_bases = pitchTypeDF.num_bases.astype(float)
+pitchTypeDF.spin_rate = pitchTypeDF.spin_rate.astype(float)
+aggPitchTypeDF = pitchTypeDF.groupby(['pitch_desc','pitch_group','is_three_zero_count','swing']).\
+    agg({'pitcher':['count'],\
+		'pitch_speed':['mean'],\
+		'num_bases':['mean'],\
+		'spin_rate':['mean']
+		})
+	
+aggArray = []
+	
+for index, row in aggPitchTypeDf.iterrows():
+	tempArray = []
+	for x in index:
+		tempArray.append(x)
+	for y in row:
+		tempArray.append(y)
+	aggArray.append(tempArray)
+	
+aggPitchTypeDF = pd.DataFrame(data=aggArray, columns=['pitch_desc','pitch_group','is_three_zero_count','swing','frequency','pitch_speed','num_bases','spin_rate'])
+	
+	
+#aggPitchTypeDF = aggPitchTypeDF.pivot(index=['pitch_desc','pitch_group'],\
+#										columns=['is_three_zero_count','swing'],
+#										values=['pitch_speed']
+#									)
 print(aggPitchTypeDF.head())
