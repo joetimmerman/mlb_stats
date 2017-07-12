@@ -9,9 +9,12 @@ import pandas as pd
 from scipy.stats.stats import pearsonr
 import time
 from tabulate import tabulate
-from scipy.stats import anderson,kstest
+from scipy.stats import anderson,kstest,mannwhitneyu
 from matplotlib import pyplot
 import mlbStats
+import warnings
+
+warnings.filterwarnings("ignore", category = UserWarning)
 
 #file directories and password location
 mlbData = 'C:\\Users\\evan.marcey\\Documents\\GitHub\\mlb_stats\\data\\'
@@ -52,20 +55,30 @@ for i in range(4,len(pitchArray)):
 	pitchArray[i]['is_three_zero_count'] = 0
 	
 	if pitchArray[i]['des'] == 'Ball' or pitchArray[i]['des'] == 'Called Strike':
-		pitchArray[i]['swing'] = 1
-	else:
 		pitchArray[i]['swing'] = 0
+	else:
+		pitchArray[i]['swing'] = 1
 
 	if pitchArray[i]['event'] == 'Walk' or pitchArray[i]['event'] == 'Single':
 		pitchArray[i]['num_bases'] = 1
+		pitchArray[i]['bases_x'] = 623
+		pitchArray[i]['bases_y'] = 347
 	elif pitchArray[i]['event'] == 'Double':
 		pitchArray[i]['num_bases'] = 2
+		pitchArray[i]['bases_x'] = 389
+		pitchArray[i]['bases_y'] = 608
 	elif pitchArray[i]['event'] == 'Triple':
 		pitchArray[i]['num_bases'] = 3
+		pitchArray[i]['bases_x'] = 155
+		pitchArray[i]['bases_y'] = 347
 	elif pitchArray[i]['event'] == 'Home Run':
 		pitchArray[i]['num_bases'] = 4
+		pitchArray[i]['bases_x'] = 389
+		pitchArray[i]['bases_y'] = 135
 	else:
 		pitchArray[i]['num_bases'] = 0
+		pitchArray[i]['bases_x'] = 389
+		pitchArray[i]['bases_y'] = 347
 	
 		
 	if pitchArray[i]['gameID'] == pitchArray[i-1]['gameID'] and\
@@ -96,6 +109,15 @@ for i in range(4,len(pitchArray)):
 							
 et = time.time()
 print('3-0 counts found in {ti} seconds.\n'.format(ti=round(et-st)))
+
+outFile = 'C:\\Users\\evan.marcey\\Documents\\GitHub\\mlb_stats\\data\\threezerotest.csv'
+with open(outFile,'w') as of:
+	ovf = csv.writer(of,
+					lineterminator='\n'
+	)
+	ovf.writerow(pitchArray[5].keys())
+	for row in pitchTypes:
+		ovf.writerow(row)
 
 #create dataFrame from pitches
 pitchDF = pd.DataFrame(data=[pitchArray[i].values() for i in range(4,len(pitchArray))],columns=pitchArray[5].keys())
@@ -196,7 +218,9 @@ ebRows = [
 print(tabulate(ebRows,headers=ebHeaders))
 
 print('\nConfidence Swinging and Not Swinging have different Expected Bases:')
-print('Z-Score:\t{mw}'.format(mw=round(mlbStats.mannWhitney(rSwing,rNoSwing),2)))
+tempZ, tempP = mlbStats.mannWhitney(rSwing,rNoSwing)
+print('Z-Score:\t{mw}'.format(mw=round(tempZ,2)))
+print('P-Value:\t{mw}'.format(mw=round(tempP,2)))
 
 #calculate pearson correlation for each of the corList variables against three_zero_ratio
 print('\nPearson Correlation for core pitching metrics:')
@@ -228,7 +252,9 @@ print('\n3-0 Frequency by L-R Handedness:')
 print(tabulate(tzRows,headers=tzHeaders))
 
 print('\nConfidence Left- and Right-handed pitchers have different 3-0 frequencies:')
-print('Z-Score:\t{mw}'.format(mw=round(mlbStats.mannWhitney(three_zero_rl[1][1],three_zero_rl[2][1]),2)))
+tempZ, tempP = mlbStats.mannWhitney(three_zero_rl[1][1],three_zero_rl[2][1])
+print('Z-Score:\t{mw}'.format(mw=round(tempZ,2)))
+print('P-Value:\t{mw}'.format(mw=round(tempP,2)))
 
 #three_zero pitch type
 pitchTypeDF = pd.DataFrame(data=[pitchTypes[i].values() for i in range(4,len(pitchTypes))],columns=pitchArray[5].keys())
@@ -236,28 +262,92 @@ pitchTypeDF = pd.DataFrame(data=[pitchTypes[i].values() for i in range(4,len(pit
 pitchTypeDF.pitch_speed = pitchTypeDF.pitch_speed.astype(float)
 pitchTypeDF.num_bases = pitchTypeDF.num_bases.astype(float)
 pitchTypeDF.spin_rate = pitchTypeDF.spin_rate.astype(float)
-aggPitchTypeDF = pitchTypeDF.groupby(['pitch_desc','pitch_group','is_three_zero_count','swing']).\
-    agg({'pitcher':['count'],\
-		'pitch_speed':['mean'],\
-		'num_bases':['mean'],\
-		'spin_rate':['mean']
-		})
-	
-aggArray = []
-	
-for index, row in aggPitchTypeDf.iterrows():
-	tempArray = []
-	for x in index:
-		tempArray.append(x)
-	for y in row:
-		tempArray.append(y)
-	aggArray.append(tempArray)
-	
-aggPitchTypeDF = pd.DataFrame(data=aggArray, columns=['pitch_desc','pitch_group','is_three_zero_count','swing','frequency','pitch_speed','num_bases','spin_rate'])
-	
-	
-#aggPitchTypeDF = aggPitchTypeDF.pivot(index=['pitch_desc','pitch_group'],\
-#										columns=['is_three_zero_count','swing'],
-#										values=['pitch_speed']
-#									)
-print(aggPitchTypeDF.head())
+pitchTypeDF.pfx_x = pitchTypeDF.pfx_x.astype(float)
+pitchTypeDF.pfx_z = pitchTypeDF.pfx_z.astype(float)
+
+pitchGroups = [
+	['Fastball'],
+	['Changeup'],
+	['Breaking Ball']
+]
+pitchVars = [
+	'pitch_speed',
+	'spin_rate',
+	'pfx_x',
+	'pfx_z'
+]
+
+pitch30Out = []
+pitchNot30Out = []
+pitch30FastballOut = []
+pitch30BreakingBallOut = []
+pgHeaders = [
+				'Pitch Group',
+				'Pitch Speed','Difference of Means',
+				'Spin Rate','Difference of Means',
+				'Horizontal Movement','Difference of Means',
+				'Vertical Movement','Difference of Means'
+			]
+			
+LL = [[0],[1]]
+L1 = [1]
+L2 = [0]
+sampleSize = 50000
+for pg in pitchGroups:
+	print('\n')
+	print(pg[0])
+	for ll in LL:
+		tempPitchTypeDF = pitchTypeDF[pitchTypeDF['pitch_group'].isin(pg)]
+		
+		tempIsThreeZero = tempPitchTypeDF[tempPitchTypeDF['is_three_zero_count'].isin(ll)]
+		tempSwing = tempIsThreeZero[tempIsThreeZero['swing'].isin(L1)]
+		tempNoSwing = tempIsThreeZero[tempIsThreeZero['swing'].isin(L2)]
+		
+		for pitchType in tempPitchTypeDF['pitch_desc'].unique():
+			pgTemp = [pitchType]
+			tempDesc = tempIsThreeZero[tempIsThreeZero['pitch_desc'].isin(pgTemp)]
+			tempDescSwing = tempDesc[tempDesc['swing'].isin(L1)]
+			tempDescNoSwing = tempDesc[tempDesc['swing'].isin(L2)]
+			for pv in pitchVars:
+				print(pv)
+				if len(tempDescSwing[pv]) > 0:
+					mwTemp,pvalue = mlbStats.mannWhitney(np.random.choice(tempDescSwing[pv],sampleSize),\
+														np.random.choice(tempDescNoSwing[pv],sampleSize))
+
+					difTemp = abs(tempDescSwing[pv].mean())-abs(tempDescNoSwing[pv].mean())
+					pgTemp.append(mwTemp)
+					pgTemp.append(difTemp)
+			
+			if len(pgTemp) > 1:
+				if pg[0] == 'Fastball' and ll[0] == 1:
+					pitch30FastballOut.append(pgTemp)
+				elif pg[0] == 'Breaking Ball' and ll[0] == 1:
+					pitch30BreakingBallOut.append(pgTemp)
+		
+		pgTemp = [pg[0]]
+		for pv in pitchVars:
+			print(pv)
+			mwTemp,pvalue = mlbStats.mannWhitney(np.random.choice(tempSwing[pv],sampleSize),\
+												np.random.choice(tempNoSwing[pv],sampleSize))
+
+			difTemp = abs(tempSwing[pv].mean())-abs(tempNoSwing[pv].mean())
+			pgTemp.append(mwTemp)
+			pgTemp.append(difTemp)
+			
+		if ll[0] == 1:
+			pitch30Out.append(pgTemp)
+		else:
+			pitchNot30Out.append(pgTemp)
+
+print('\nConfidence 3-0 pitches swung on and not swung on are different:')
+print(tabulate(pitch30Out,headers=pgHeaders))
+
+print('\nConfidence 3-0 fastballs swung on and not swung on are different:')
+print(tabulate(pitch30FastballOut,headers=pgHeaders))
+
+print('\nConfidence 3-0 breaking balls swung on and not swung on are different:')
+print(tabulate(pitch30BreakingBallOut,headers=pgHeaders))
+
+print('\nConfidence other pitches swung on and not swung on are different:')
+print(tabulate(pitchNot30Out,headers=pgHeaders))
+
