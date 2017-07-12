@@ -56,6 +56,11 @@ The adv_batting_stats queries select and calculate a series of batting statistic
 * wRC
 * Stolen Base Success Rate
 
+### pitch_game_atBat_create.sql
+This script creates the view used by three_zero_counts.py. It's, essentially, a join of each pitch to its atBat and game, as well as the pitcher's yearly adv pitching stats, and a pitch type reference table, filtering out for the following:
+* Only regular season games
+* No at bats that result in Interference, Errors, Sacrifices, Hit By Pitch or Intentional Walks
+
 ## Python:
 This folder contains all Python scripts.
 
