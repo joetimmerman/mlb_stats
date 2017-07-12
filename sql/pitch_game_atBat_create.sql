@@ -1,3 +1,5 @@
+DROP VIEW IF EXISTS pitch_game_atBat;
+
 CREATE VIEW pitch_game_atBat AS
 (select 	g.gameID 					AS gameID,
 			ab.event_num 				AS event_num,
@@ -10,6 +12,9 @@ CREATE VIEW pitch_game_atBat AS
             ifnull(ptr.pitchGroup,'UN')	AS pitch_group,
             ifnull(p.start_speed,0)		AS pitch_speed,
             ifnull(p.spin_rate,0)		AS spin_rate,
+            ifnull(p.pfx_x,0)			AS pfx_x,
+            ifnull(p.pfx_z,0)			AS pfx_z,
+            ifnull(SQRT(POW(p.pfx_x,2)+POW(p.pfx_z,2)),0)			AS pfx_movement,
             p.des 						AS des,
             ab.pitcher 					AS pitcher,
             ab.p_throws 				AS p_throws,
