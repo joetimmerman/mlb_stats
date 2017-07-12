@@ -536,3 +536,14 @@ CREATE TABLE `team` (
   `league` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`teamID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- ref_elias_to_lehman bridges the two different kinds of playerIDs
+-- you'll see both of these kinds of ids in different places
+-- our playerID key is the eliasid, but other APIs and webpages often use lehmanid
+CREATE TABLE `ref_elias_to_lehman` (
+  `eliasid` int(11) NOT NULL,
+  `first` varchar(45) DEFAULT NULL,
+  `last` varchar(45) DEFAULT NULL,
+  `lehmanid` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`eliasid`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
