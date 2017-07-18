@@ -12,7 +12,10 @@ import warnings
 
 warnings.filterwarnings("ignore", category = pymysql.Warning)
 
-passFile = 'C:\\Users\\evan.marcey\\Documents\\mlb_stats\\pass.csv'
+#passFile path is now relative
+currDir = os.path.dirname(os.path.abspath(__file__ + '/../../..'))
+passFile = str(os.path.join(currDir,'mlb_stats', 'pass.csv'))
+
 #method openConnection creates a connection to the AWS instance and a cursor for that connection	
 #output: connection & cursor objects
 def openConnection():
