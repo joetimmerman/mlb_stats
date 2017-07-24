@@ -52,7 +52,10 @@ SELECT	ab1.playerID,
 			WHEN '2012'
 				THEN ROUND((((0.690*ab1.bb + 0.722*ab1.hbp + 0.888*ab1.singles + 1.271*ab1.doubles + 1.616*ab1.triples + 2.101*ab1.home_runs)/(ab1.pa-ab1.ibb)-0.315)/1.245 + (bbx1_lg.runs/bbx1_lg.pa))*ab1.pa,3)
 			ELSE -1
-		END wRC
+		END wRC,
+        sr.swing_rate,
+        sr.pitches_per_at_bat,
+        sr.foul_rate
 FROM	(SELECT pg.playerID,
 				substr(g.gameID,1,7) record_month,
 				COUNT(ab.atBatNum) pa,
@@ -176,4 +179,33 @@ JOIN	(SELECT	substring(g.gameID,1,7) record_month,
 			ON	g.gameID = bbx.game_id
 			AND	g.type = 'R'
 		GROUP BY	substring(g.gameID,1,7)) bbx1_lg
-	ON	bbx1_lg.record_month = sb1.record_month;
+	ON	bbx1_lg.record_month = sb1.record_month
+JOIN	(SELECT	ab.batter,
+				substr(ab.gameID,1,7) record_month,
+				ROUND(SUM(CASE 
+						WHEN p.des = 'Swinging Strike' OR lower(p.des) like '%foul%' OR lower(p.des) like '%in%play%'
+							THEN 1 
+						ELSE 0
+					END)/count(1),3) swing_rate,
+				round(count(1)/count(distinct ab.gameID, ab.atBatNum),3) pitches_per_at_bat,
+                ROUND(SUM(CASE
+							WHEN lower(p.des) like '%foul%'
+								THEN 1
+							ELSE 0
+						END)/
+                        SUM(CASE
+							WHEN loweR(p.des) like '%in%play%'
+								THEN 1
+							ELSE 0
+						END),3) foul_rate
+		FROM 	atBat ab
+		JOIN	game g
+			ON	g.gameID = ab.gameID
+			AND	g.type = 'R'
+		JOIN	pitch p
+			ON	p.gameID = ab.gameID
+			AND	p.atBatNum = ab.atBatNum
+		group by 	ab.batter,
+					substr(ab.gameID,1,7)) sr
+	ON	sr.record_month = ab1.record_month
+    AND	sr.batter = ab1.playerID;
