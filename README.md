@@ -55,6 +55,19 @@ The adv_batting_stats queries select and calculate a series of batting statistic
 * wRAA
 * wRC
 * Stolen Base Success Rate
+* Swing Rate (Pitches Swung On)/(Pitches Seen)
+* Avg. Pitches per At Bat
+* Foul Rate (Fouls/(Pitches Swung On))
+
+### Catcher Stats
+The catcher stats queries select and calculate a series of catching metrics:
+* Net Strikes Gained Per Pitch (strikes called out of zone - balls called in zone)/(pitches caught)
+* Strike Rate Out Of Zone (strikes called out of zone/(strikes called out of zone + balls called out of zone))
+* Ball Rate In Zone (Balls called in zone/(balls called in zone + strikes called in zone))
+* Knuckle, Fastballl, Breaking Ball, Changeup Rate
+* Wild Pitches Per Game Caught
+* Passed Balls Per Game Caught
+* Caught Stealing over Stolen Base Attempts
 
 ### pitch_game_atBat_create.sql
 This script creates the view used by three_zero_counts.py. It's, essentially, a join of each pitch to its atBat and game, as well as the pitcher's yearly adv pitching stats, and a pitch type reference table, filtering out for the following:
