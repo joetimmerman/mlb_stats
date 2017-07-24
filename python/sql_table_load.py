@@ -10,12 +10,15 @@ pymysql.pooling = False
 sqlDir = 'C:\\Users\\evan.marcey\\Documents\\GitHub\\mlb_stats\\sql\\'
 
 sqlFiles = [
+	'catcher_stats_year.sql',
+	'catcher_stats_month.sql',
 	'adv_pitching_stats_year.sql',
 	'adv_pitching_stats_month.sql',
 	'adv_batting_stats_year.sql',
 	'adv_batting_stats_month.sql',
 	'player.sql',
-	'team.sql'
+	'team.sql',
+	'pitch_frequency_year.sql'
 ]
 	
 for sqlFile in sqlFiles:
@@ -42,7 +45,7 @@ for sqlFile in sqlFiles:
 		connection.commit()
 		connection.close()
 		
-		connection,conn = openConnection()
+		connection,conn = mlbStats.openConnection()
 			
 		print('\tInserting records into {tn}...'.format(tn=sqlFile))
 		mlbStats.insertRecords(tableName,preppedQuery,mlbStats.getColumns(tableName))
