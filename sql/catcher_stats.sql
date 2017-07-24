@@ -1,44 +1,25 @@
-CREATE OR REPLACE VIEW wp_pb AS
-  (SELECT bbx.playerID catcher_id,
-          substring(a.gameID,1,4) record_year,
-          count(DISTINCT a.gameID) num_games,
-          SUM(CASE
-                  WHEN event = 'Wild Pitch' THEN 1
-                  ELSE 0
-              END) wp_count,
-          SUM(CASE
-                  WHEN event = 'Passed Ball' THEN 1
-                  ELSE 0
-              END) pb_count,
-          SUM(CASE
-                  WHEN lower(a.event) LIKE '%stolen base%' THEN 1
-                  ELSE 0
-              END) stolen_bases,
-          SUM(CASE
-                  WHEN lower(a.event) LIKE '%caught stealing%' THEN 1
-                  ELSE 0
-              END) caught_stealing
-   FROM action a
-   JOIN game g ON g.gameID = a.gameID
-   AND g.type = 'R'
-   AND a.event_num <
-     (SELECT IFNULL(min(a1.event_num),10000) event_num
-      FROM action a1
-      WHERE a1.event ='Defensive Sub'
-        AND a1.des LIKE '%catcher%'
-        AND a1.gameID = a.gameID)
-   JOIN player_game bbx ON bbx.gameID = a.gameID
-   AND bbx.game_position = 'C'
-   AND ((bbx.teamType = 'home'
-        AND a.topBottom = 'top')
-   OR (bbx.teamType = 'away'
-       AND a.topBottom = 'bottom'))
-   GROUP BY bbx.playerID,
-            substring(a.gameID,1,4));
-
-
-CREATE OR REPLACE VIEW catcher_temp AS
-  (SELECT bbx.playerID catcher_id,
+SELECT m1.catcher_id,
+          m1.record_year,
+          m1.num_pitches,
+          m1.strikes_out_of_zone,
+          m1.strikes_in_zone,
+          m1.balls_out_of_zone,
+          m1.balls_in_zone,
+          round((m1.strikes_out_of_zone-m1.balls_in_zone)/m1.num_pitches,6) net_strikes_gained_per_pitch,
+          round(m1.strikes_out_of_zone/(m1.strikes_out_of_zone+m1.balls_out_of_zone),3) strike_rate_out_of_zone,
+          round(m1.balls_in_zone/(m1.balls_in_zone+m1.strikes_out_of_zone),3) ball_rate_in_zone,
+          round(m1.knuckle_ct/m1.num_pitches,3) knuckle_rate,
+          round(m1.fb_ct/m1.num_pitches,3) fastball_rate,
+          round(m1.breaking_ct/m1.num_pitches,3) breaking_ball_rate,
+          round(m1.changeup_ct/m1.num_pitches,3) changeup_rate,
+          wp_pb.wp_count,
+          wp_pb.pb_count,
+          wp_pb.stolen_bases,
+          wp_pb.caught_stealing,
+          round(wp_pb.wp_count/wp_pb.num_games,3) wp_per_game,
+          round(wp_pb.pb_count/wp_pb.num_games,3) pb_per_game,
+          round(wp_pb.stolen_bases/(wp_pb.stolen_bases+wp_pb.caught_stealing),3) caught_stealing_over_attempts
+   FROM (SELECT bbx.playerID catcher_id,
           substring(ab.gameID,1,4) record_year,
           count(1) num_pitches,
           SUM(CASE
@@ -100,31 +81,42 @@ CREATE OR REPLACE VIEW catcher_temp AS
    OR (bbx.teamType = 'away'
        AND ab.topBottom = 'bottom'))
    GROUP BY bbx.playerID,
-            substring(ab.gameID,1,4));
-
-
-CREATE OR REPLACE VIEW catcher_stats AS
-  (SELECT m1.catcher_id,
-          m1.record_year,
-          m1.num_pitches,
-          m1.strikes_out_of_zone,
-          m1.strikes_in_zone,
-          m1.balls_out_of_zone,
-          m1.balls_in_zone,
-          round(m1.strikes_out_of_zone/(m1.strikes_out_of_zone+m1.balls_out_of_zone),3) strikes_rate_out_of_zone,
-          round(m1.balls_in_zone/(m1.balls_in_zone+m1.strikes_out_of_zone),3) ball_rate_in_zone,
-          round(m1.knuckle_ct/m1.num_pitches,3) knuckle_rate,
-          round(m1.fb_ct/m1.num_pitches,3) fb_rate,
-          round(m1.breaking_ct/m1.num_pitches,3) breaking_rate,
-          round(m1.changeup_ct/m1.num_pitches,3) changeup_rate,
-          wp_pb.wp_count,
-          wp_pb.pb_count,
-          wp_pb.stolen_bases,
-          wp_pb.caught_stealing,
-          round(wp_pb.wp_count/wp_pb.num_games,3) wp_per_game,
-          round(wp_pb.pb_count/wp_pb.num_games,3) pb_per_game,
-          round(wp_pb.stolen_bases/(wp_pb.stolen_bases+wp_pb.caught_stealing),3) cs_over_attempts
-   FROM catcher_temp m1
-   JOIN wp_pb ON wp_pb.catcher_id = m1.catcher_id
-   AND wp_pb.record_year = m1.record_year
-   AND wp_pb.num_games > 10);
+            substring(ab.gameID,1,4)) m1
+   LEFT JOIN (SELECT bbx.playerID catcher_id,
+          substring(a.gameID,1,4) record_year,
+          count(DISTINCT a.gameID) num_games,
+          SUM(CASE
+                  WHEN event = 'Wild Pitch' THEN 1
+                  ELSE 0
+              END) wp_count,
+          SUM(CASE
+                  WHEN event = 'Passed Ball' THEN 1
+                  ELSE 0
+              END) pb_count,
+          SUM(CASE
+                  WHEN lower(a.event) LIKE '%stolen base%' THEN 1
+                  ELSE 0
+              END) stolen_bases,
+          SUM(CASE
+                  WHEN lower(a.event) LIKE '%caught stealing%' THEN 1
+                  ELSE 0
+              END) caught_stealing
+   FROM action a
+   JOIN game g ON g.gameID = a.gameID
+   AND g.type = 'R'
+   AND a.event_num <
+     (SELECT IFNULL(min(a1.event_num),10000) event_num
+      FROM action a1
+      WHERE a1.event ='Defensive Sub'
+        AND a1.des LIKE '%catcher%'
+        AND a1.gameID = a.gameID)
+   JOIN player_game bbx ON bbx.gameID = a.gameID
+   AND bbx.game_position = 'C'
+   AND ((bbx.teamType = 'home'
+        AND a.topBottom = 'top')
+   OR (bbx.teamType = 'away'
+       AND a.topBottom = 'bottom'))
+   GROUP BY bbx.playerID,
+            substring(a.gameID,1,4)) wp_pb
+ON wp_pb.catcher_id = m1.catcher_id
+   AND wp_pb.record_year = m1.record_year;
