@@ -427,7 +427,6 @@ CREATE TABLE `adv_batting_stats_month` (
   `wRC` float DEFAULT NULL,
   PRIMARY KEY (`playerID`,`record_month`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
- from adv_pitching_stats_year;
 
 -- create table with stats for adv batting metrics by year
 CREATE TABLE `adv_batting_stats_year` (
@@ -454,34 +453,10 @@ CREATE TABLE `adv_batting_stats_year` (
   `so_rate` double(5,3) DEFAULT NULL,
   `wRAA` float DEFAULT NULL,
   `wRC` float DEFAULT NULL,
+  `swing_rate` float DEFAULT NULL,
+  `pitches_per_at_bat` float DEFAULT NULL,
+  `foul_rate` float DEFAULT NULL,
   PRIMARY KEY (`playerID`,`record_year`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
--- create table with stats for adv pitching metrics by month
-CREATE TABLE `adv_pitching_stats_month` (
-  `playerID` int(11) NOT NULL,
-  `record_month` varchar(10) NOT NULL,
-  `FIP` float DEFAULT NULL,
-  `WHIP` float DEFAULT NULL,
-  `xFIP` float DEFAULT NULL,
-  `strikeout_rate` double(5,3) DEFAULT NULL,
-  `walk_rate` double(5,3) DEFAULT NULL,
-  `hr_to_fly_ball_rate` double(5,3) DEFAULT NULL,
-  `games_played` int(11) DEFAULT NULL,
-  `at_bats` int(11) DEFAULT NULL,
-  `home_runs` int(11) DEFAULT NULL,
-  `hits` int(11) DEFAULT NULL,
-  `walks` int(11) DEFAULT NULL,
-  `hit_by_pitch` int(11) DEFAULT NULL,
-  `strikeouts` int(11) DEFAULT NULL,
-  `outs` int(11) DEFAULT NULL,
-  `sac` int(11) DEFAULT NULL,
-  `fly_balls` int(11) DEFAULT NULL,
-  `ground_balls` int(11) DEFAULT NULL,
-  `pop_ups` int(11) DEFAULT NULL,
-  `SIERA` float DEFAULT NULL,
-  `cFIP` float DEFAULT NULL,
-  PRIMARY KEY (`playerID`,`record_month`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- create table with stats for adv pitching metrics by year
@@ -519,6 +494,18 @@ CREATE TABLE `player` (
   `rl_throws` varchar(2) DEFAULT NULL,
   `rl_bats` varchar(2) DEFAULT NULL,
   `position` varchar(5) DEFAULT NULL,
+  `height` varchar(45) DEFAULT NULL,
+  `height_in` int(11) DEFAULT NULL,
+  `weight` varchar(45) DEFAULT NULL,
+  `birthDate` varchar(45) DEFAULT NULL,
+  `birthPlace` varchar(45) DEFAULT NULL,
+  `birth_city` varchar(45) DEFAULT NULL,
+  `birth_state_or_country` varchar(45) DEFAULT NULL,
+  `draft_year` int(11) DEFAULT NULL,
+  `draft_team` varchar(45) DEFAULT NULL,
+  `draft_round` varchar(45) DEFAULT NULL,
+  `drafted_from` varchar(45) DEFAULT NULL,
+  `high_school` varchar(45) DEFAULT NULL,
   PRIMARY KEY (`playerID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -536,6 +523,15 @@ CREATE TABLE `team` (
   `league` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`teamID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- reference table for pitch types with full name and group (Fastball, Cahngeup, Breaking Ball)
+CREATE TABLE `pitchTypeRef` (
+  `pitchType` varchar(5) NOT NULL,
+  `pitchDesc` varchar(100) DEFAULT NULL,
+  `pitchGroup` varchar(15) DEFAULT NULL,
+  PRIMARY KEY (`pitchType`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
 
 -- ref_elias_to_lehman bridges the two different kinds of playerIDs
 -- you'll see both of these kinds of ids in different places
