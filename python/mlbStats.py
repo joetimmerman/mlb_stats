@@ -64,16 +64,6 @@ def getSQL(query_file):
 	print('Query ran in {ti} seconds.\n'.format(ti=round(et-st)))
 	connection.close()
 	return(query_result)
-	
-def mannWhitney(array1,array2):
-	len1 = len(array1)
-	len2 = len(array2)
-	uStatistic, pvalue = mannwhitneyu(array1,array2)
-	meanU = (len1*len2)/2
-	sigmaU = ((len1*len2*(len1+len2+1))/12)**0.5
-	
-	zScore = (uStatistic - meanU)/sigmaU
-	return(zScore,pvalue)
 
 errorDir = 'C:\\Users\\evan.marcey\\Documents\\mlb_stats\\error_logs\\'
 archiveDir = 'C:\\Users\\evan.marcey\\Documents\\mlb_stats\\error_logs\\error_archive\\'
