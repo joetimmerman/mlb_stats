@@ -9,6 +9,7 @@ import csv
 import os
 import datetime
 import warnings
+from scipy.stats import mannwhitneyu
 
 warnings.filterwarnings("ignore", category = pymysql.Warning)
 
@@ -61,27 +62,18 @@ def getSQL(query_file):
 	print('Query fetched.')
 	et = time.time()
 	print('Query ran in {ti} seconds.\n'.format(ti=round(et-st)))
+	connection.close()
 	return(query_result)
 	
 def mannWhitney(array1,array2):
 	len1 = len(array1)
 	len2 = len(array2)
-	
-	sumRanks = 0
-	
-	for a in array1:
-		for b in array2:
-			if a > b:
-				sumRanks += 1
-			elif a == b:
-				sumRanks += 0.5
-				
-	uStatistic = sumRanks - (len1*(len1+1))/2
+	uStatistic, pvalue = mannwhitneyu(array1,array2)
 	meanU = (len1*len2)/2
 	sigmaU = ((len1*len2*(len1+len2+1))/12)**0.5
 	
 	zScore = (uStatistic - meanU)/sigmaU
-	return(zScore)
+	return(zScore,pvalue)
 	
 connection,conn = openConnection()
 
@@ -985,6 +977,7 @@ def deleteAll():
 def insertRecords(tableName,inArray,tableFields):
 	#creates execute statement
 	#uses form VALUES (%s,%s,%s...) with #%s == #fields in row
+	connection,conn = openConnection()
 	vVar = "%s"
 	for i in range(0,len(inArray[0])-1):
 		vVar+=",%s"	   
@@ -996,6 +989,7 @@ def insertRecords(tableName,inArray,tableFields):
 		exs ="INSERT IGNORE INTO " + tableName +			 " VALUES (" + vVar + ")"
 		conn.executemany(exs,inArray)
 	connection.commit()
+	connection.close()
 
 #method to write 1 array to 1 file
 #input: table array with table name and field names;
@@ -1217,11 +1211,11 @@ def main(parentURLs):
 	print("There were %s atBat errors found." % len(badAtBats))
 	print("There were %s Pitch errors found." % len(fuckedPitches))
 	print("See error logs for more details.")
-	errorsFileName = 'C:\\Users\\evan.marcey\\Documents\\mlbStats\\error_logs\\urlErrors_' + str(runTime) +'.csv'
+	errorsFileName = 'C:\\Users\\evan.marcey\\Documents\\mlb_stats\\error_logs\\urlErrors_' + str(runTime) +'.csv'
 	writeOut(errorsFileName,errorURLs,['errors'])
-	badAtBatsFileName = 'C:\\Users\\evan.marcey\\Documents\\mlbStats\\error_logs\\badAtBat_' + str(runTime) +'.csv'
+	badAtBatsFileName = 'C:\\Users\\evan.marcey\\Documents\\mlb_stats\\error_logs\\badAtBat_' + str(runTime) +'.csv'
 	writeOut(badAtBatsFileName,badAtBats,['errors'])
-	badPitchesFileName = 'C:\\Users\\evan.marcey\\Documents\\mlbStats\\error_logs\\badPitches_' + str(runTime) +'.csv'
+	badPitchesFileName = 'C:\\Users\\evan.marcey\\Documents\\mlb_stats\\error_logs\\badPitches_' + str(runTime) +'.csv'
 	writeOut(badPitchesFileName,fuckedPitches,['errors'])
 	
 	yTime = time.time()
