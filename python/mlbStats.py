@@ -74,8 +74,6 @@ def mannWhitney(array1,array2):
 	
 	zScore = (uStatistic - meanU)/sigmaU
 	return(zScore,pvalue)
-	
-connection,conn = openConnection()
 
 errorDir = 'C:\\Users\\evan.marcey\\Documents\\mlb_stats\\error_logs\\'
 archiveDir = 'C:\\Users\\evan.marcey\\Documents\\mlb_stats\\error_logs\\error_archive\\'
@@ -947,28 +945,34 @@ def loopInserts(dbFile):
 #input: tableName (string name of table)
 #output: tableFields (array of fields for tableName)
 def getColumns(tableName):
+	connection,conn = openConnection()
 	conn.execute("SHOW COLUMNS FROM {tn}".format(tn=tableName))
 	tableFields = []
 	for row in conn.fetchall():
 		tableFields.append(row['Field'])
+	connection.close()
 	return tableFields
 
 #delete data from one table using a where clause
 #input: table name, where clause
 #output: string verifying table has been deleted
 def deleteOne(table,where):
+	connection,conn = openConnection()
 	exs = "DELETE FROM {tn} WHERE {qn}".format(tn=table,qn=where)
 	conn.execute(exs)	
 	connection.commit()
+	connection.close()
 	return(table + ' deleted.')
 
 #easy method to delete all data from relevant tables
 #input: none (uses allTables instantiated at the top)
 #output: none
 def deleteAll():
+	connection,conn = openConnection()
 	for table in allTables:		
 		deleted = deleteOne(table,'1=1')
 		print(deleted)
+	connection.close()
 		
 #method to write 1 array to 1 table (uses connection instatiated above)
 #input: table array with table name and field names; 
@@ -1070,9 +1074,12 @@ def getDistinct(inArray):
 	return dist
 
 def selectRecords(tableName):
+	connection,conn = openConnection()
 	ex2 = "SELECT * from {tn}".format(tn=tableName)
 	conn.execute(ex2)
-	return(conn.fetchall())
+	oDict = conn.fetchall()
+	connection.close()
+	return(oDict)
 
 def runErrors():
 	nErrors, nBadAtBats, nBadPitches = loadErrors()
@@ -1167,6 +1174,7 @@ def runYesterday():
 	main(yUrl)
 
 def recentDays():
+	connection,conn = openConnection()
 	es = 'SELECT MAX(gameID) from game'
 	conn.execute(es)
 	stuff = conn.fetchall()[0]['MAX(gameID)']
@@ -1184,7 +1192,7 @@ def recentDays():
 		yUrl = "http://gd2.mlb.com/components/game/mlb/year_%s/month_%s/day_%s/" % (year, month, day)
 		yUrls.append(yUrl)
 		ndt = ndt+datetime.timedelta(days=1)
-
+	connection.close()
 	main(yUrls)
 	
 def prepArray(tableName,inDict):
@@ -1224,7 +1232,6 @@ def main(parentURLs):
 	loopInserts('db')
 	
 	yTime = time.time()
-	connection.close()
 
 	print('%s seconds elapsed.' % round(yTime-xTime,0))
 	
@@ -1279,7 +1286,7 @@ def leverageParse():
 	tree = etree.parse(leverageURL, etree.HTMLParser())
 	root = tree.getroot() 
 	oArray = []
-
+	
 	for table in root.iter('table'):
 		if table.items()[0][1] == '450':
 			y = 0
@@ -1321,6 +1328,8 @@ def leverageParse():
 						temp.append(on_2b)
 						temp.append(on_3b)
 						oArray.append(temp)
+	
+	connection,conn = openConnection()
 	columns = getColumns('leverage')
 	insertRecords('leverage',oArray,columns)
 	connection.commit()
