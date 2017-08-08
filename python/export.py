@@ -5,33 +5,6 @@ import sys
 import mlbStats
 
 mlbData = 'C:\\Users\\evan.marcey\\Documents\\GitHub\\mlb_stats\\data\\'
-	
-tables = [
-	'game',
-	'umpire_game',
-	'pitch',
-	'pickoff',
-	'atBat',
-	'coach_game',
-	'player_game',
-	'stadium_game',
-	'runner',
-	'action',
-	'boxscore',
-	'batter_box',
-	'pitcher_box',
-	'linescore',
-	'linescore_inning',
-	'leverage',
-	'park_factors',
-	'team_game',
-	'adv_batting_stats_month',
-	'adv_batting_stats_year',
-	'adv_pitching_stats_month',
-	'adv_pitching_stats_year',
-	'player',
-	'team'
-]
 
 def fetchAndWrite(table, conn):
 	print('Starting: ' + table)
@@ -64,9 +37,12 @@ def export():
 		connection,conn = mlbStats.openConnection()
 		
 		if len(sys.argv) == 1:
+			conn.execute("SHOW TABLES;")
+			tables = conn.fetchall()
 			for table in tables:
-				fetchAndWrite(table, conn)
+				fetchAndWrite(table['Tables_in_mlb_data_test'], conn)
 		else:
+			
 			fetchAndWrite(sys.argv[1], conn)		
 
 	except pymysql.err.OperationalError as err:
