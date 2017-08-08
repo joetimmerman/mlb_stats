@@ -78,31 +78,7 @@ This script creates the view used by three_zero_counts.py. It's, essentially, a 
 This folder contains all Python scripts.
 
 ### Export.py
-Python script to export all or some of the tables. If passed without additional command line argument, it will run a full extract of the following tables:
-* game
-* umpire_game
-* pitch
-* pickoff
-* atBat
-* coach_game
-* player_game
-* stadium_game
-* runner
-* action
-* boxscore
-* batter_box
-* pitcher_box
-* linescore
-* linescore_inning
-* leverage
-* park_factors
-* team_game
-* adv_batting_stats_month
-* adv_batting_stats_year
-* adv_pitching_stats_month
-* adv_pitching_stats_year
-* player
-* team
+Python script to export all or some of the tables. If passed without additional command line argument, it will run a full extract for each table in the database.
 
 Otherwise, passing a table name as an argument will extract that single table.
 
