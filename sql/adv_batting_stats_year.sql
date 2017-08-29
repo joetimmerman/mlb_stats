@@ -6,9 +6,13 @@ SELECT	ab1.playerID,
         ab1.rbis,
         ab1.home_runs + ab1.singles + ab1.doubles + ab1.triples hits,
         ab1.bb + ab1.ibb walks,
+		ab1.pa-ab1.bb-ab1.ibb-ab1.sac-ab1.hbp-ab1.interference at_bats,
+		ab1.so,
         ab1.fly_balls,
         ab1.pop_outs,
         ab1.ground_balls,
+		ab1.hbp,
+		ab1.sac,
         sb1.sb,
         sb1.cs,
         ROUND(sb1.sb/(sb1.sb/sb1.cs),3) stolen_base_success_rate,
@@ -22,37 +26,6 @@ SELECT	ab1.playerID,
 		ROUND((ab1.singles+ab1.doubles+ab1.triples)/(ab1.pa-ab1.bb-ab1.ibb-ab1.hbp-ab1.interference-ab1.so-ab1.home_runs),3) BABIP,        
         ROUND(ab1.bb/ab1.pa,2) bb_rate,
         ROUND(ab1.so/ab1.pa,2) so_rate,
-        ROUND((0.690*ab1.bb + 0.722*ab1.hbp + 0.888*ab1.singles + 1.271*ab1.doubles + 1.616*ab1.triples + 2.101*ab1.home_runs)/(ab1.pa-ab1.ibb),3) wOBA,
-        CASE ab1.record_year
-			WHEN '2017'
-				THEN ROUND((((0.690*ab1.bb + 0.722*ab1.hbp + 0.888*ab1.singles + 1.271*ab1.doubles + 1.616*ab1.triples + 2.101*ab1.home_runs)/(ab1.pa-ab1.ibb)-0.321)/1.185)*ab1.pa,3)
-			WHEN '2016'
-				THEN ROUND((((0.690*ab1.bb + 0.722*ab1.hbp + 0.888*ab1.singles + 1.271*ab1.doubles + 1.616*ab1.triples + 2.101*ab1.home_runs)/(ab1.pa-ab1.ibb)-0.318)/1.212)*ab1.pa,3)
-			WHEN '2015'
-				THEN ROUND((((0.690*ab1.bb + 0.722*ab1.hbp + 0.888*ab1.singles + 1.271*ab1.doubles + 1.616*ab1.triples + 2.101*ab1.home_runs)/(ab1.pa-ab1.ibb)-0.313)/1.251)*ab1.pa,3)
-			WHEN '2014'
-				THEN ROUND((((0.690*ab1.bb + 0.722*ab1.hbp + 0.888*ab1.singles + 1.271*ab1.doubles + 1.616*ab1.triples + 2.101*ab1.home_runs)/(ab1.pa-ab1.ibb)-0.310)/1.304)*ab1.pa,3)
-			WHEN '2013'
-				THEN ROUND((((0.690*ab1.bb + 0.722*ab1.hbp + 0.888*ab1.singles + 1.271*ab1.doubles + 1.616*ab1.triples + 2.101*ab1.home_runs)/(ab1.pa-ab1.ibb)-0.314)/1.251)*ab1.pa,3)
-			WHEN '2012'
-				THEN ROUND((((0.690*ab1.bb + 0.722*ab1.hbp + 0.888*ab1.singles + 1.271*ab1.doubles + 1.616*ab1.triples + 2.101*ab1.home_runs)/(ab1.pa-ab1.ibb)-0.315)/1.245)*ab1.pa,3)
-			ELSE -1
-		END wRAA,
-        CASE ab1.record_year
-			WHEN '2017'
-				THEN ROUND((((0.690*ab1.bb + 0.722*ab1.hbp + 0.888*ab1.singles + 1.271*ab1.doubles + 1.616*ab1.triples + 2.101*ab1.home_runs)/(ab1.pa-ab1.ibb)-0.321)/1.185 + (bbx1_lg.runs/bbx1_lg.pa))*ab1.pa,3)
-			WHEN '2016'
-				THEN ROUND((((0.690*ab1.bb + 0.722*ab1.hbp + 0.888*ab1.singles + 1.271*ab1.doubles + 1.616*ab1.triples + 2.101*ab1.home_runs)/(ab1.pa-ab1.ibb)-0.318)/1.212 + (bbx1_lg.runs/bbx1_lg.pa))*ab1.pa,3)
-			WHEN '2015'
-				THEN ROUND((((0.690*ab1.bb + 0.722*ab1.hbp + 0.888*ab1.singles + 1.271*ab1.doubles + 1.616*ab1.triples + 2.101*ab1.home_runs)/(ab1.pa-ab1.ibb)-0.313)/1.251 + (bbx1_lg.runs/bbx1_lg.pa))*ab1.pa,3)
-			WHEN '2014'
-				THEN ROUND((((0.690*ab1.bb + 0.722*ab1.hbp + 0.888*ab1.singles + 1.271*ab1.doubles + 1.616*ab1.triples + 2.101*ab1.home_runs)/(ab1.pa-ab1.ibb)-0.310)/1.304 + (bbx1_lg.runs/bbx1_lg.pa))*ab1.pa,3)
-			WHEN '2013'
-				THEN ROUND((((0.690*ab1.bb + 0.722*ab1.hbp + 0.888*ab1.singles + 1.271*ab1.doubles + 1.616*ab1.triples + 2.101*ab1.home_runs)/(ab1.pa-ab1.ibb)-0.314)/1.251 + (bbx1_lg.runs/bbx1_lg.pa))*ab1.pa,3)
-			WHEN '2012'
-				THEN ROUND((((0.690*ab1.bb + 0.722*ab1.hbp + 0.888*ab1.singles + 1.271*ab1.doubles + 1.616*ab1.triples + 2.101*ab1.home_runs)/(ab1.pa-ab1.ibb)-0.315)/1.245 + (bbx1_lg.runs/bbx1_lg.pa))*ab1.pa,3)
-			ELSE -1
-		END wRC,
         sr.swing_rate,
         sr.pitches_per_at_bat,
         sr.foul_rate
@@ -86,12 +59,12 @@ FROM	(SELECT pg.playerID,
 						ELSE 0
 					END) bb,
 				SUM(CASE
-						WHEN ab.event = 'Intent Walk'
+						WHEN ab.event = 'Hit By Pitch'
 							THEN 1
 						ELSE 0
 					END) hbp,
 				SUM(CASE
-						WHEN ab.event = 'Hit By Pitch'
+						WHEN ab.event = 'Intent Walk'
 							THEN 1
 						ELSE 0
 					END) ibb,
@@ -171,15 +144,6 @@ JOIN 	(SELECT	bbx.id playerID,
 					substring(g.gameID,1,4)) bbx1
 	ON	bbx1.playerID = sb1.playerID
     AND	bbx1.record_year = sb1.record_year
-JOIN	(SELECT	substring(g.gameID,1,4) record_year,
-				SUM(r)	runs,
-				COUNT(1) pa
-		FROM	game g
-		JOIN	batter_box bbx
-			ON	g.gameID = bbx.game_id
-			AND	g.type = 'R'
-		GROUP BY	substring(g.gameID,1,4)) bbx1_lg
-	ON	bbx1_lg.record_year = sb1.record_year
 JOIN	(SELECT	ab.batter,
 				substr(ab.gameID,1,4) record_year,
 				ROUND(SUM(CASE 
