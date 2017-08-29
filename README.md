@@ -156,3 +156,26 @@ broken down by whether the batter swings at the 3-0 pitch or not.
 It prints the expected values, variance and standard deviation for both of these cases, as well as for all 3-0 counts, and for all at bats.
 
 It then calculates the Pearson correlation for % 3-0 counts for a pitcher against FIP, WHIP, xFIP, SIERA, k rate, bb rate, and hr to fly ball rate.
+
+### pitch_with_count.py
+
+This script populates a new table with pitches that have information on the game situation. This includes previous 2 pitches (where applicable), outs in the inning, length of the at bat, number of strikes and balls. It then writes out to a flat file and truncates/inserts into a pitch_with_count table.
+
+### yu_darvish_predictor.py
+
+This is a very (very (very)) specific modeling case. Using Yu Darvish's pitches, an SVM builds and trains a model that predicts whether he will throw a Four-Seam Fastball or not given a set of in-game and batter attributes. Currently runs with about 70% accuracy.
+Features used:
+	- Batter R/L handed
+	- Outs at start of at bat
+	- previous 2 pitches
+	- runners on 1/2/3
+	- inning
+	- difference in score (pitcher team runs - batter team runs)
+	- count (i.e. 0-0)
+	- batter batting average, slg, obp, babip, walk rate, strikeout rate, and avg pitches per at bat
+	
+The SVM uses an rbf kernel with c=8 and gamma = 0.0275.
+
+### pred_interface.py
+
+This scripts creates an interface using tkinter that allows you to select a batter from a list (with scrollbar and search function to make it easier), set a game situation and test the model. It returns whether or not it thinks Yu Darvish will throw a Four-Seam fastball in the given situation.
