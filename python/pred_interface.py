@@ -5,6 +5,7 @@ import pymysql
 import pymysql.cursors
 import pandas as pd
 from sklearn.externals import joblib
+import numpy as np
 import warnings
 
 mlbPkl = 'C:\\Users\\evan.marcey\\Documents\\GitHub\\mlb_stats\\pkl\\'
@@ -15,11 +16,11 @@ class main_menu(Frame):
 	def __init__(self,master=None):
 		
 		Frame.__init__(self,master)
-		master.title("Predict Yu's pitches!")
+		master.title("Predict Kershaw's pitches!")
 		pFrame = Frame(master)
 		
-		root.minsize(905,500)
-		root.maxsize(905,500)
+		root.minsize(905,550)
+		root.maxsize(905,550)
 		pFrame.grid(row=1,column=0)
 		pFrame.grid_rowconfigure(0)
 		num_bat_features = 9
@@ -52,7 +53,7 @@ class main_menu(Frame):
 		Label(pFrame,
 			  text="Choose a batter:",
 			  justify=LEFT,
-			  relief=RAISED,
+			  relief=RIDGE,
 			  borderwidth=2).grid(row=0,
 								  column=0,
 								  columnspan=2,
@@ -79,7 +80,7 @@ class main_menu(Frame):
 		Label(pFrame,
 			  text="Batter stats:",
 			  justify=LEFT,
-			  relief=RAISED,
+			  relief=RIDGE,
 			  borderwidth=2).grid(row=0,
 								  column=2,
 								  columnspan=2,
@@ -184,7 +185,7 @@ class main_menu(Frame):
 						  text="Select Highlighted Batter",
 						  justify=LEFT,
 						  relief=RAISED,
-						  borderwidth=2,
+						  borderwidth=5,
 						  command=selectBatter).grid(row=num_bat_features+1,
 													 column=0,
 													 sticky=N+S+W+E)
@@ -192,7 +193,7 @@ class main_menu(Frame):
 		Label(pFrame,
 			  text='Game Situation:',
 			  justify=LEFT,
-			  relief=RAISED,
+			  relief=RIDGE,
 			  borderwidth=2).grid(row=0,
 								  column=4,
 								  columnspan=2,
@@ -252,7 +253,7 @@ class main_menu(Frame):
 		Label(pFrame,
 			  text='At Bat:',
 			  justify=LEFT,
-			  relief=RAISED,
+			  relief=RIDGE,
 			  borderwidth=2).grid(row=0,
 								  column=6,
 								  columnspan=2,
@@ -270,7 +271,7 @@ class main_menu(Frame):
 		strikeText = Spinbox(pFrame,from_=0,to=2)
 		strikeText.grid(row=2,column=7,sticky=N+S+W+E)
 									  
-		pitchChoices = {'NA','CH','CU','FT','FF','SL','FC','FS'}
+		pitchChoices = {'NA','CH','CU','FT','FF','SL'}
 		prevVar = StringVar()
 		prevVar2 = StringVar()
 		prevVar.set('NA')
@@ -296,9 +297,138 @@ class main_menu(Frame):
 												  column=7,
 												  sticky=N+S+W+E)
 												  
-		resultVar = StringVar()
-		resultText = Entry(pFrame,textvariable=resultVar)
-		resultText.grid(row=num_bat_features+3,column=0,columnspan=8,sticky=N+S+W+E)
+		result_row = num_bat_features+4
+		
+		Label(pFrame,text='').grid(row=result_row-1,
+								  column=0,
+								  columnspan=8,
+								  sticky=N+S+W+E)
+		Label(pFrame, 
+			  text = 'Results',
+			  justify=LEFT,
+			  relief=RIDGE,
+			  borderwidth=5).grid(row=result_row,
+								  column=0,
+								  columnspan=8,
+								  sticky=N+S+W+E)
+		
+		Label(pFrame, 
+			  text = 'Kershaw throws a Four-Seam',
+			  justify=LEFT,
+			  relief=RIDGE,
+			  borderwidth=2).grid(row=result_row+1,
+								  column=0,
+								  columnspan=3,
+								  sticky=N+S+W+E)
+		
+		Label(pFrame,
+			  text='Result:',
+			  justify=LEFT).grid(row=result_row+2,
+								 column=0,
+								 columnspan=2,
+								 sticky=N+S+W+E)
+		
+		ffResultVar = StringVar()
+		ffResultText = Entry(pFrame,textvariable=ffResultVar)
+		ffResultText.grid(row=result_row+2,
+						  column=2,
+						  sticky=N+S+W+E)
+		
+		ffTrueVar = DoubleVar()
+		Label(pFrame,
+			  text='Probability of Four-Seam:',
+			  justify=LEFT).grid(row=result_row+3,
+								 column=0,
+								 columnspan=2,
+								 sticky=N+S+W+E)
+			  
+		ffTrueText = Entry(pFrame,textvariable=ffTrueVar)
+		ffTrueText.grid(row=result_row+3,column=2,sticky=N+S+W+E)
+		
+		ffFalseVar = DoubleVar()
+		Label(pFrame,
+			  text='Probability of Other:',
+			  justify=LEFT).grid(row=result_row+4,
+								 column=0,
+								 columnspan=2,
+								 sticky=N+S+W+E)
+			  
+		ffFalseText = Entry(pFrame,textvariable=ffFalseVar)
+		ffFalseText.grid(row=result_row+4,column=2,sticky=N+S+W+E)
+		
+		Label(pFrame,
+			  text='Expected Pitch',
+			  justify=LEFT,
+			  relief=RIDGE,
+			  borderwidth=2).grid(row=result_row+1,
+								  column=4,
+								  columnspan=4,
+								  sticky=N+S+W+E)
+	
+		Label(pFrame,
+			  text='Result:').grid(row=result_row+2,
+									 column=4,
+									 sticky=N+S+W+E)
+		epVar = StringVar()
+		epText = Entry(pFrame,textvariable=epVar)
+		epText.grid(row=result_row+2,
+					column=5,
+					sticky=N+S+W+E)
+					
+		Label(pFrame,
+			  text='Four-Seam:').grid(row=result_row+3,
+									 column=4,
+									 sticky=N+S+W+E)
+									 
+		fsVar = DoubleVar()
+		fsText = Entry(pFrame,textvariable=fsVar)
+		fsText.grid(row=result_row+3,
+					column=5,
+					sticky=N+S+W+E)
+									 
+		Label(pFrame,
+			  text='Two-Seam:').grid(row=result_row+4,
+									column=4,
+									sticky=N+S+W+E)
+									
+		tsVar = DoubleVar()
+		tsText = Entry(pFrame,textvariable=tsVar)
+		tsText.grid(row=result_row+4,
+					column=5,
+					sticky=N+S+W+E)
+									 
+		Label(pFrame,
+			  text='Slider:').grid(row=result_row+2,
+								  column=6,
+								  sticky=N+S+W+E)
+								  
+		slVar = DoubleVar()
+		slText = Entry(pFrame,textvariable=slVar)
+		slText.grid(row=result_row+2,
+					column=7,
+					sticky=N+S+W+E)
+								  
+		Label(pFrame,
+			  text='Changeup:').grid(row=result_row+3,
+									column=6,
+									sticky=N+S+W+E)
+									
+		chVar = DoubleVar()
+		chText = Entry(pFrame,textvariable=chVar)
+		chText.grid(row=result_row+3,
+					column=7,
+					sticky=N+S+W+E)
+									
+		Label(pFrame,
+			  text='Curveball:').grid(row=result_row+4,
+									 column=6,
+								     sticky=N+S+W+E)
+									 
+		cuVar = DoubleVar()
+		cuText = Entry(pFrame,textvariable=cuVar)
+		cuText.grid(row=result_row+4,
+					column=7,
+					sticky=N+S+W+E)
 		
 		def predict(*args):
 			predArray = []
@@ -327,14 +457,36 @@ class main_menu(Frame):
 				predArray.append(prevVar.get() == pc)
 				predArray.append(prevVar2.get() == pc)
 
-			clf = joblib.load(mlbPkl+'yu_svm.pkl')
-			prediction = clf.predict(predArray)
-			#resultText.delete(0,END)
-			if prediction[0] == True:
-				resultVar.set('Yu will throw a Four-Seam Fastball.')
+			#pull is four seam pkl
+			pgclf = joblib.load(mlbPkl+'kershaw_group_svm.pkl')
+			#predict probabilities
+			pprob = pgclf.predict_proba(predArray)
+			#set prob true/false
+			ffFalseVar.set(round(pprob[0][np.where(pgclf.classes_==False)][0],3))
+			ffTrueVar.set(round(pprob[0][np.where(pgclf.classes_==True)][0],3))
+			#predict literal value
+			pgpred = pgclf.predict(predArray)
+			#return result
+			if pgpred[0] == True:
+				ffResultVar.set('Four-Seam')
 			else:
-				resultVar.set('Yu will not throw a Four-Seam Fastball.')
-				
+				ffResultVar.set('Other')
+			
+			#pull pitch type pkl
+			ptclf = joblib.load(mlbPkl+'kershaw_type_svm.pkl')
+			ptprob = ptclf.predict_proba(predArray)
+			#predict probabilities
+			ptclasses = ptclf.classes_.tolist()
+			#assign probabilities to each pitch type
+			fsVar.set(round(ptprob[0][ptclasses.index('FF')],3))
+			tsVar.set(round(ptprob[0][ptclasses.index('FT')],3))
+			slVar.set(round(ptprob[0][ptclasses.index('SL')],3))
+			chVar.set(round(ptprob[0][ptclasses.index('CH')],3))
+			cuVar.set(round(ptprob[0][ptclasses.index('CU')],3))
+			
+			#predict literal value
+			ptpred = ptclf.predict(predArray)
+			epVar.set(ptpred[0])
 		
 		predButton = Button(pFrame,
 							text='Predict!',
