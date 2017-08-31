@@ -8,13 +8,14 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn import ensemble, svm, preprocessing
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.externals import joblib
+from sklearn.neural_network import MLPClassifier
 
 mlbPkl = 'C:\\Users\\evan.marcey\\Documents\\GitHub\\mlb_stats\\pkl\\'
 
 #assign model type, cross-validate 10 runs, train set
 #input: model - model abbreviation, xArray - feature array, yArray - predictor array
 #output: clf - model built, modelScores - array of 10 cross-validation scores
-def runModel(model,xArray,yArray,num_trials=200,test_size=0.1):
+def runModel(model,xArray,yArray,num_trials=200,test_size=0.2):
 	modelScores = []
 	#create model based on input
 	if model == 'dtc':
@@ -47,10 +48,12 @@ def runModel(model,xArray,yArray,num_trials=200,test_size=0.1):
 		clf = ensemble.GradientBoostingClassifier()
 	elif model == 'svm':
 		clf = svm.SVC(
-					  kernel='rbf',
+					  #kernel='rbf',
+					  kernel='linear',
 					  cache_size=1000,
-					  C=8,
-					  gamma=0.0275
+					  #C=8,
+					  C=0.11
+					  #gamma=0.0275
 					 )
 	else:
 		clf = DecisionTreeClassifier()
@@ -116,7 +119,11 @@ mlbPkl = 'C:\\Users\\evan.marcey\\Documents\\GitHub\\mlb_stats\\pkl\\'
 #Adam Wainwright - 425794
 #Vance Worley - 474699
 #Bartolo Colon - 112526
-pitcherID = 506433
+#Alex Wood - 622072
+#Jacob deGrom - 594798
+#Stephen Strasburg - 544931
+#Clayton Kershaw - 477132
+pitcherID = 477132
 
 #load pitch_pred from file
 pitchPredFile = mlbData + 'pitch_pred.csv'
@@ -140,10 +147,10 @@ pitchPredDF['rl_batter'] = pitchPredDF['rl_batter'] == 'R'
 pitchPredDF['prev_pitch'] = pitchPredDF['prev_pitch'].fillna('NA',axis=0)
 pitchPredDF['prev_pitch_2'] = pitchPredDF['prev_pitch_2'].fillna('NA',axis=0)
 #filter down to selected pitcher and remove bad records
-pitchPredDF.query('pitcher==@pitcherID & type_confidence >= 1.25 & inningNum < 10 & balls < 4 & pitch_type != "EP" & pitch_type != "FA" & pitch_type != "FO" &  pitch_type != "PO" & pa > 50', inplace=True)
+pitchPredDF.query('pitcher==@pitcherID & type_confidence >= 1.25 & inningNum < 10 & balls < 4 & pitch_type != "EP" & pitch_type != "FA" & pitch_type != "FO" &  pitch_type != "PO" & pa > 100', inplace=True)
 pitchPredDF.query('prev_pitch != "EP" & prev_pitch != "FA" & prev_pitch != "FO" &  prev_pitch != "PO"', inplace=True)
 pitchPredDF.query('prev_pitch_2 != "EP" & prev_pitch_2 != "FA" & prev_pitch_2 != "FO" &  prev_pitch_2 != "PO"', inplace=True)
-
+print(pitchPredDF['record_year'].value_counts())
 pitchPredDF = pitchPredDF.loc[:,[
 							'pitch_type',
 							'pitch_group',
@@ -172,7 +179,6 @@ pitchPredDF.dropna(axis=0,how='any',inplace=True)
 pitchPredDF['pitch_group'] = pitchPredDF['pitch_type'] == 'FF'
 
 print(len(pitchPredDF))
-print(pitchPredDF['prev_pitch'].unique())
 #create binary fields for at_bat_count, prev_pitch and prev_pitch_2
 for abc in pitchPredDF['at_bat_count'].unique():
 	if int(abc[:len(abc)-2]) < 4:
@@ -191,12 +197,20 @@ print('Pitches filtered and formatted in {vs} seconds.\n'.format(vs=round(endTim
 print(pitchPredDF['pitch_type'].value_counts(normalize=True))
 print(pitchPredDF['pitch_group'].value_counts(normalize=True))
 
-
 print('Pitch Type SVM')
+clfIsFFSVM = svm.SVC(kernel='linear',
+					 cache_size=1000,
+					 C=0.11,
+					 probability=True
+					 )
+clfIsFFSVM.fit(pitchPredDF.iloc[:,2:],pitchPredDF['pitch_group'])
+joblib.dump(clfIsFFSVM,mlbPkl+'kershaw_group_svm.pkl')
 
-clfPitchTypeSVM, pitchTypeSVMModelScores = runModel('svm',
-													pitchPredDF.iloc[:,2:],
-													pitchPredDF['pitch_group'])
-print(np.mean(pitchTypeSVMModelScores))
-print(clfPitchTypeSVM.score(pitchPredDF.iloc[:,2:],pitchPredDF['pitch_group']))
-joblib.dump(clfPitchTypeSVM,mlbPkl+'yu_svm.pkl')
+clfPitchTypeSVM = svm.SVC(kernel='rbf',
+						  cache_size=1000,
+						  C=8.25,
+						  gamma=0.0275,
+						  probability=True
+						  )
+clfPitchTypeSVM.fit(pitchPredDF.iloc[:,2:],pitchPredDF['pitch_type'])
+joblib.dump(clfPitchTypeSVM,mlbPkl+'kershaw_type_svm.pkl')
