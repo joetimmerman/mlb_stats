@@ -24,7 +24,9 @@ class main_menu(Frame):
 		pFrame.grid(row=1,column=0)
 		pFrame.grid_rowconfigure(0)
 		num_bat_features = 9
-
+		result_row = num_bat_features+4
+		
+		#this section pulls the batters from the db
 		connection, conn = mlbStats.openConnection()
 		conn.execute("SELECT * FROM (Select pl.playerID, pl.first_name, pl.last_name, pl.position, pl.rl_bats, ab.record_year, ab.batting_average, ab.OBP, ab.SLG, ab.OPS, ab.bb_rate, ab.so_rate, ab.pitches_per_at_bat, ab.BABIP FROM player pl JOIN adv_batting_stats_year ab ON pl.playerID = ab.playerID ORDER BY pl.playerID, ab.record_year DESC) a1 GROUP BY playerID;")
 		players = pd.DataFrame(conn.fetchall())
@@ -32,6 +34,8 @@ class main_menu(Frame):
 		players.sort_values(by=['last_name','first_name'],inplace=True)
 		playerNames = pd.Series.tolist(players['full_name'])
 		connection.close()
+		
+		#This section puts together the listbox with batters along with scrollbar and search bar
 		scrollbar = Scrollbar(pFrame, orient=VERTICAL)
 		search_var = StringVar()
 		search_var.trace("w", lambda name, index, mode: update_list())
@@ -50,14 +54,17 @@ class main_menu(Frame):
 				if search_term.lower() in pn.lower():
 					playerList.insert(END, pn)
 		
+		
 		Label(pFrame,
 			  text="Choose a batter:",
 			  justify=LEFT,
 			  relief=RIDGE,
-			  borderwidth=2).grid(row=0,
+			  borderwidth=2,
+			  font=(None,12)).grid(row=0,
 								  column=0,
 								  columnspan=2,
 								  sticky=N+S+W+E)
+		
 		playerList.grid(row=2,
 						column=0,
 						rowspan=num_bat_features-1,
@@ -77,11 +84,13 @@ class main_menu(Frame):
 		
 		update_list()
 		
+		#This section constructs the selected batter stats and populates the data when selected
 		Label(pFrame,
 			  text="Batter stats:",
 			  justify=LEFT,
 			  relief=RIDGE,
-			  borderwidth=2).grid(row=0,
+			  borderwidth=2,
+			  font=(None,12)).grid(row=0,
 								  column=2,
 								  columnspan=2,
 								  sticky=N+S+W+E)
@@ -166,6 +175,8 @@ class main_menu(Frame):
 		appapText = Entry(pFrame,textvariable=appapVar).grid(row=9,
 															  column=3,
 															  sticky=N+S+W+E)
+		
+		#This section performs the select update on the batter and populates the stat fields
 		def selectBatter():
 			playerName = playerList.get(ACTIVE)
 			vPlayers = players.copy()
@@ -190,11 +201,13 @@ class main_menu(Frame):
 													 column=0,
 													 sticky=N+S+W+E)
 													 
+		#This section creates the frame for choosing the game situation
 		Label(pFrame,
 			  text='Game Situation:',
 			  justify=LEFT,
 			  relief=RIDGE,
-			  borderwidth=2).grid(row=0,
+			  borderwidth=2,
+			  font=(None,12)).grid(row=0,
 								  column=4,
 								  columnspan=2,
 								  sticky=N+S+W+E)
@@ -250,11 +263,13 @@ class main_menu(Frame):
 															  column=5,
 															  sticky=N+S+W+E)
 		
+		#This section allows the user to frame the at bat
 		Label(pFrame,
 			  text='At Bat:',
 			  justify=LEFT,
 			  relief=RIDGE,
-			  borderwidth=2).grid(row=0,
+			  borderwidth=2,
+			  font=(None,12)).grid(row=0,
 								  column=6,
 								  columnspan=2,
 								  sticky=N+S+W+E)
@@ -297,8 +312,7 @@ class main_menu(Frame):
 												  column=7,
 												  sticky=N+S+W+E)
 												  
-		result_row = num_bat_features+4
-		
+		#This section builds the result framework for will/won't throw four seam and expected pitch
 		Label(pFrame,text='').grid(row=result_row-1,
 								  column=0,
 								  columnspan=8,
@@ -307,16 +321,18 @@ class main_menu(Frame):
 			  text = 'Results',
 			  justify=LEFT,
 			  relief=RIDGE,
-			  borderwidth=5).grid(row=result_row,
+			  borderwidth=5,
+			  font=(None,14)).grid(row=result_row,
 								  column=0,
 								  columnspan=8,
 								  sticky=N+S+W+E)
 		
 		Label(pFrame, 
-			  text = 'Kershaw throws a Four-Seam',
+			  text = 'Kershaw throws a Four-Seam:',
 			  justify=LEFT,
 			  relief=RIDGE,
-			  borderwidth=2).grid(row=result_row+1,
+			  borderwidth=2,
+			  font=(None,12)).grid(row=result_row+1,
 								  column=0,
 								  columnspan=3,
 								  sticky=N+S+W+E)
@@ -357,10 +373,11 @@ class main_menu(Frame):
 		ffFalseText.grid(row=result_row+4,column=2,sticky=N+S+W+E)
 		
 		Label(pFrame,
-			  text='Expected Pitch',
+			  text='Expected Pitch:',
 			  justify=LEFT,
 			  relief=RIDGE,
-			  borderwidth=2).grid(row=result_row+1,
+			  borderwidth=2,
+			  font=(None,12)).grid(row=result_row+1,
 								  column=4,
 								  columnspan=4,
 								  sticky=N+S+W+E)
@@ -465,9 +482,9 @@ class main_menu(Frame):
 			ffFalseVar.set(round(pprob[0][np.where(pgclf.classes_==False)][0],3))
 			ffTrueVar.set(round(pprob[0][np.where(pgclf.classes_==True)][0],3))
 			#predict literal value
-			pgpred = pgclf.predict(predArray)
+			pgclasses = pgclf.classes_.tolist()
 			#return result
-			if pgpred[0] == True:
+			if pgclasses[np.argmax(pprob[0])] == True:
 				ffResultVar.set('Four-Seam')
 			else:
 				ffResultVar.set('Other')
@@ -485,13 +502,13 @@ class main_menu(Frame):
 			cuVar.set(round(ptprob[0][ptclasses.index('CU')],3))
 			
 			#predict literal value
-			ptpred = ptclf.predict(predArray)
-			epVar.set(ptpred[0])
+			epVar.set(ptclasses[np.argmax(ptprob[0])])
 		
 		predButton = Button(pFrame,
 							text='Predict!',
 							relief=RAISED,
 							borderwidth=5,
+							font=(None,14),
 							command=predict).grid(row=num_bat_features+2,
 												  column=0,
 												  columnspan=8,
