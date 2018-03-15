@@ -177,3 +177,13 @@ Features used:
 ### pred_interface.py
 
 This scripts creates an interface using tkinter that allows you to select a batter from a list (with scrollbar and search function to make it easier), set a game situation and test the model. It returns whether or not it thinks Kershaw will throw a Four-Seam fastball in the given situation, and what pitch it expects Kershaw to throw.
+
+## Python setup
+To get up and running quickly:
+1. `cd` to project direcotry
+2. If virtualenv not yet installed, `pip install virtualenv`
+3. `virtualenv venv` (if python3 is not default version, specify path to python3 with `-p`)
+4. `source venv/bin/activate` (on Windows, `venv\Scripts\activate.bat`)
+5. Install dependencies from requirements file: `pip install -r requirements.txt`
+7. When finished, `deactivate` virtual environment
+
